@@ -33,7 +33,7 @@ export default function Home() {
               <ListClass/>
             </div>
           ) : (
-            <p>Nenhum usuário logado atualmente.</p>
+            <p>Nenhum usuário logado atualmente..</p>
           )}
        
        
