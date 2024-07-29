@@ -1,0 +1,42 @@
+/* Adicione isso no seu arquivo de estilos */
+.react-tabs__tab-list {
+    border-bottom: 1px solid #ccc;
+    margin: 0 0 10px;
+    padding: 0;
+  }
+  .react-tabs__tab {
+    display: inline-block;
+    border: 1px solid transparent;
+    border-bottom: none;
+    bottom: -1px;
+    position: relative;
+    list-style: none;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .react-tabs__tab--selected {
+    background: #fff;
+    border-color: #ccc;
+    border-radius: 5px 5px 0 0;
+  }
+  .react-tabs__tab-panel {
+    display: none;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  .react-tabs__tab-panel--selected {
+    display: block;
+  }
+  .checkbox-group {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  

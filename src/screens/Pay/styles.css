@@ -1,0 +1,158 @@
+.payment-page {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-page h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .payment-methods {
+    margin-bottom: 20px;
+  }
+  
+  .payment-methods label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  input[type="text"] {
+   display: flex;
+   width: 100px;
+   height: 48px;
+   padding: 0px;
+  }
+
+
+  
+  button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+
+  .payment-plans {
+    max-width: 800px;
+    margin: 16px auto;
+    text-align: center;
+  }
+  
+  
+.cards-container {
+    display: flex;
+    overflow-x: auto; /* Permite rolagem horizontal */
+    white-space: nowrap; /* Impede quebra de linha */
+    padding: 10px 0; /* Espaçamento superior e inferior */
+  }
+
+
+/* Barra de rolagem */
+.cards-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .cards-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .cards-container::-webkit-scrollbar-thumb {
+    background: #88888800;
+  }
+  
+  .cards-container::-webkit-scrollbar-thumb:hover {
+    background: #55555500;
+  }
+  
+  .cards-container {
+    scrollbar-width: thin;
+    scrollbar-color: #88888800 #f1f1f100;
+  }
+  
+  
+  .card {
+    flex: 0 0 60%; 
+    height: 300px;
+    margin: 10px; 
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    background-color: #fff;
+    display: inline-block; /* Exibe os cards em linha */
+  }
+  
+  .card:hover {
+    transform: scale(1.05);
+  }
+  
+  .price {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+  
+  button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  .creditfields{
+    width: 100%;
+    height: 100%;
+  }
+
+  form{
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .footpay{
+    display: flex;
+    width: 100%;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+
+  }
+
+  @media (max-width: 700px) {
+
+    input[type="text"] {
+      width: 600px;
+      max-width: 90%;
+      height: 38px;
+      border: none; /* Remove todas as bordas */
+      border-bottom: 1px solid rgba(94, 94, 94, 0.5); /* Linha fina na borda inferior */
+      font-size: 16px;
+      border-radius: 4px;
+      outline: none; /* Remove o contorno ao focar */
+      
+    }
+
+    .creditfields{
+        width: 100%;
+        height: 100%;
+    }
+}  
+  
+  
+  
+  

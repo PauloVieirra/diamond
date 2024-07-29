@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=VT323&display=swap');
+
+:root {
+  --primary: #2fa338;
+  --secondary: #6d15df;
+}
+h1,h2,h3 {
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  color: #333;
+  font-family: 'Poppins';
+  background: #f2f2f2;
+}
+nav {
+  background: var(--primary);
+  padding: 10px 20px;
+  text-align: center;
+}
+nav a {
+  color: #f2f2f2;
+  margin: 10px;
+  display: inline-block;
+}
+nav h1 {
+  color: #fff;
+}
+.page {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 6px;
+}
+.publis-card{
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: aqua;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Define o número de colunas e o tamanho mínimo/máximo */
+  gap: 2px; /* Espaçamento entre os itens */
+  width: 100%; /* Ocupa toda a largura disponível */
+  
+}
+
+/* Estilos para telas com largura máxima de 600 pixels */
+@media (max-width: 600px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Altera o número de colunas para ajustar o tamanho dos itens */
+    gap: 10px; /* Espaçamento menor entre os itens */
+  }
+
+  .card {
+    border-radius: 6px; /* Borda mais arredondada */
+  }
+
+  .card-image {
+    height: 150px; /* Altura menor para as imagens */
+  }
+
+  .card-content {
+    padding: 10px; /* Padding menor */
+  }
+
+  .card-title {
+    font-size: 1.2rem; /* Tamanho de fonte menor para o título */
+  }
+}
+

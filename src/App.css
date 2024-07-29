@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Praise:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+.light-mode main {
+  background-color: var(--main-bg-light); /* Cor de fundo padrão */
+  transition: background-color 0.3s ease; /* Transição suave */
+ 
+}
+
+.dark-mode main  {
+  background-color: var(--main-bg-dark); /* Cor de fundo para modo escuro */
+  color: var(--text-color-dark); /* Cor do texto para modo escuro */
+  transition: background-color 0.3s ease; /* Transição suave */
+ 
+}
+
+main{
+  margin: 0px;
+  padding: 0px;
+  background-color: #1d4ed8;
+}
+
+
+body {
+  margin: 0;
+  line-height: normal;
+}
+
+h4 {
+  font-weight: 400;
+}
+
+.dark-mode h4 {
+  font-weight: 400;
+  color: var(--text-color-dark); /* Cor do texto para modo escuro */
+}
+
+h3{
+  font-weight: 400;
+}
+
+.dark-mode title {
+  font-weight: 400;
+ color: var(--title-color-dark); /* Cor do texto para modo escuro */
+}
+
+
+:root {
+  /* fonts */
+  --font-dm-sans: "DM Sans";
+  --font-praise: Praise;
+  --regular-16: Roboto;
+  --font-manrope: Manrope;
+
+  /* font sizes */
+  --regular-16-size: 16px;
+  --font-size-11xl: 30px;
+  --regular-18-size: 18px;
+  --font-size-xl: 20px;
+  --font-size-19xl: 38px;
+  --font-size-4xl: 23px;
+  --medium-50-size: 50px;
+  --medium-36-size: 36px;
+  --font-size-3xl: 22px;
+  --regular-14-size: 14px;
+
+  /* Colors */
+  --color-primary: #092C4C;
+  --color-secondary: #7160D0;
+  --color-tertiary: #F2994A;
+  --color-ghostwhite: #f3f6ff;
+  --primary-blue-500: #1d4ed8;
+  --colour-main-grey-600: #5d6970;
+  --neutral-600: #4b5768;
+  --color-mediumslateblue: #675dde;
+  --color-cornflowerblue: #688aed;
+  --colour-main-blue-900: #091133;
+  --color-text: rgba(255, 255, 255, 0.8);
+  --colour-main-blue-400: #6f7cb2;
+  --colour-main-blue-500: #505f98;
+  --colour-main-blue-600: #37447e;
+  --colour-main-blue-700: #222f65;
+  --color-black: #000;
+  --main-bg-light: #f3f3f3; /* Cor de fundo para modo claro */
+  --text-color-light: #333;
+  --main-bg-dark: #424242; /* Cor de fundo para modo escuro */
+  --text-color-dark: #d6d6d6;
+  --title-color-dark:#f7f7f7ee;
+
+  /* Gaps */
+  --gap-5xl: 24px;
+  --gap-xl: 20px;
+  --gap-xs: 12px;
+  --gap-11xs: 2px;
+  --gap-base: 16px;
+  --gap-3xs: 10px;
+  --gap-31xl: 50px;
+  --gap-6xl: 25px;
+  --gap-11xl: 30px;
+  --gap-mini: 15px;
+
+  /* Paddings */
+  --padding-11xl: 30px;
+  --padding-41xl: 60px;
+  --padding-3xl: 22px;
+  --padding-xl: 20px;
+  --padding-base: 16px;
+  --padding-7xs: 6px;
+  --padding-137xl: 156px;
+  --padding-20xl: 39px;
+  --padding-82xl: 101px;
+  --padding-5xs: 8px;
+  --padding-61xl: 80px;
+  --padding-8xs: 5px;
+  --padding-8xl-3: 27.3px;
+  --padding-8xl-2: 27.2px;
+  --padding-3xs: 10px;
+  --padding-xs: 12px;
+  --padding-18xl: 37px;
+
+  /* Border radiuses */
+  --br-xs: 12px;
+  --br-81xl: 100px;
+  --br-11xs: 2px;
+}
+
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+input{
+  width: 100%;
+  height: 38px;
+  border-color: rgba(175, 175, 175, 0);
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+select{
+  width: 100%;
+  height: 38px;
+  max-width: 270px;
+  border-color: rgba(175, 175, 175, 0);
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  padding-left: 6px;
+  border-radius: 4px;
+}
+
+/* Botoes */
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 42px;
+  border-radius: 8px;
+  background-color: #335c81;
+  color: white;
+  font-size: 16px;
+  margin-top: 30px;
+  transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
+  box-shadow: none; /* Inicialmente sem sombra */
+}
+
+.btnPrimary:hover {
+    background-color: #3e688d;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
+}
+
+.btn_secondary{
+  width: 100%;
+  max-width: 270px;
+  height: 42px;
+  background-color: #9191911e;
+  border-color: rgba(83, 83, 83, 0.774);
+  font-size: 16px;
+}
+.btn_terciary{
+  width: 100%;
+  max-width: 270px;
+  height: 42px;
+  background-color: #f7f7f700;
+  border-color: rgba(16, 140, 248, 0);
+  font-size: 16px;
+}
+
+.space{
+  width: 100%;
+  height: 30px;
+}
+.footer,
+.footer-links,
+.navigation {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  max-width: 100%;
+}
+.footer-links {
+  flex: 1;
+  justify-content: space-between;
+  gap: var(--gap-xl);
+}
+.footer {
+  align-self: stretch;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: var(--font-size-11xl);
+  color: var(--color-mediumslateblue);
+  font-family: var(--font-praise);
+  height: 100px;
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  display: flex;
+  align-self: stretch;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: var(--font-size-11xl);
+  color: var(--color-mediumslateblue);
+  font-family: var(--font-praise);
+  padding-left: var(--padding-41xl);
+  padding-right: var(--padding-41xl);
+  height: 100px;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 740px) {
+
+  input {
+    min-width: 86%;
+    height: 42px;
+    border: none; /* Remove todas as bordas */
+    border-bottom: 1px solid rgba(94, 94, 94, 0.5); /* Linha fina na borda inferior */
+    font-size: 16px;
+    border-radius: 4px;
+    outline: none; /* Remove o contorno ao focar */
+    padding-left: 6px;
+  }
+
+  .btnPrimary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    background-color: #335c81;
+    color: white;
+    font-size: 16px;
+    margin-top: 30px;
+    transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
+    box-shadow: none; /* Inicialmente sem sombra */
+  }
+  
+  .btnPrimary:hover {
+      background-color: #3e688d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
+  }
+  
+  
+}

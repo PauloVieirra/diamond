@@ -1,0 +1,162 @@
+.containercards {
+  display: flex;
+  width: 100%;
+  height: auto;
+  padding-top: 30px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardalunos {
+  display: flex;
+  width: 60%;
+  height: auto;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s;
+}
+
+.cardalunos:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.cardinto{
+  width: 100%;
+}
+.cardintorow{
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cont-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.5s ease; /* Adiciona uma transição suave para o efeito de escala */
+}
+
+.card-image:hover {
+  transform: scale(1.1);
+}
+
+.card-content {
+
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.card-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button {
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button-edit {
+  display: flex;
+  width: 100px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #d37f00;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-gerar {
+  display: flex;
+  width: 100px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #335491;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-like,
+.button-share {
+  background-color: #fff;
+  color: #007bff;
+}
+
+.button-like:hover,
+.button-share:hover {
+  background-color: #f0f0f0;
+}
+.linebooton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  gap: 16px;
+}
+
+/* Estilos para telas com largura máxima de 600 pixels */
+@media (max-width: 740px) {
+
+  .containercards {
+    display: flex;
+    width: 100%;
+    height: auto;
+    padding-top: 30px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .cardalunos {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: auto;
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.4s;
+  }
+  .cardalunos:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  .cardinto{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .linebooton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: auto;
+    padding-top: 16px;
+    gap: 16px;
+  }
+}
