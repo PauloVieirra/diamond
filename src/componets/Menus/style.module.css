@@ -294,6 +294,15 @@
   font-family: Roboto;
 }
 
+.buttonexitContweb{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 42px;
+  margin-left: 30px;
+}
+
 
 
 @media (max-width: 820px) {
@@ -468,6 +477,9 @@
     height: 42px;
     align-items: center;
     gap: 20px;
+  }
+  .buttonexitContweb{
+    display: none;
   }
 
  }

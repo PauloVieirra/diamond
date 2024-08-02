@@ -129,7 +129,12 @@ const MenuTopApp = () => {
               <b className={styles.eRav}>A-</b>
             </div>
             <SwitchButton />
+           </div>
+
+          <div className={styles.buttonexitContweb} onClick={handleLogout}>
+                  <div className={styles.buttonexit}>Sair</div>
           </div>
+
           <div className={styles.elementbuttonsmallfilledWrapperLoged}>
             <div className={styles.iconImage}>
               <h4 style={{ color: "#fff" }}></h4>
