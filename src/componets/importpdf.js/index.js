@@ -40,7 +40,7 @@ const ImportAlunos = () => {
             Orgao: textContent.items[1].str.trim(),
             CRE: textContent.items[2].str.trim(),
             Instituicao: textContent.items[3].str.trim(),
-            Data: textContent.items[3].str.trim(),
+            Diaregistro: textContent.items[4].str.trim(),
             Serie: textContent.items[8].str.trim(),
             Turno: textContent.items[10].str.trim().replace(/[^\p{L}\s]/gu, '')
           };
@@ -139,6 +139,8 @@ const ImportAlunos = () => {
       }
   
       const insertPromises = alunosToInsert.map(aluno => {
+        const now = new Date();
+        const dataRegistro = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
         return supabase
         .from('alunos')
         .insert({
@@ -149,6 +151,7 @@ const ImportAlunos = () => {
            phone: aluno.phone,
            idade: aluno.idade,
            resposavel: aluno.resposavel,
+           Data: dataRegistro,
           ...headerData
          });
       });
@@ -185,6 +188,8 @@ const ImportAlunos = () => {
           <h2>{headerData.Orgao}</h2>
           <h3>{headerData.CRE}</h3>
           <h3>{headerData.Instituicao}</h3>
+          <h3>{headerData.Diaregistro}</h3>
+          <h3>{headerData.Data}</h3>
           <h3>{headerData.Serie}</h3>
           <h3>{headerData.Turno}</h3>
           <div className='contimportsbtns'>

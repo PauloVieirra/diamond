@@ -61,11 +61,11 @@ const ListClass = () => {
     let filteredResults = publis;
 
     if (selectedEscola) {
-      filteredResults = filteredResults.filter(publi => publi.escola === selectedEscola);
+      filteredResults = filteredResults.filter(publi => publi.Instituicao === selectedEscola);
     }
 
     if (selectedTurno) {
-      filteredResults = filteredResults.filter(publi => publi.turno === selectedTurno);
+      filteredResults = filteredResults.filter(publi => publi.Turno === selectedTurno);
     }
 
     if (searchTerm) {
@@ -94,13 +94,13 @@ const ListClass = () => {
   ];
 
   const escolasOptions = [
-    { value: 'Escola 1', label: 'Colegio Centro 03' },
-    { value: 'Escola 2', label: 'Escola Classe 400' },
+    { value: 'Escola 1', label: 'Colegio Centro 0' },
+    { value: 'Centro de Ensino Fundamental 03 da Estrutural', label: '03 da Estrutural' },
   ];
 
   const turnoOptions = [
     { value: 'manha', label: 'Matutino' },
-    { value: 'tarde', label: 'Vespertino' },
+    { value: 'Vespertino', label: 'Vespertino' },
     { value: 'noite', label: 'Noturno' },
   ];
 
@@ -167,12 +167,14 @@ const ListClass = () => {
         
 
       {fetchError && (<p>{fetchError}</p>)}
-      {searchResults && selectedEscola && selectedTurno && (
+      {searchResults && searchResults.length > 0 ? (
         <div className="grid-container">
           {searchResults.map(publi => (
             <PubliCards key={publi.id} publi={publi} />
           ))}
         </div>
+      ) : (
+        <p>Nenhum resultado encontrado.</p>
       )}
     </div>
   );
