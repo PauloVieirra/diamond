@@ -41,53 +41,14 @@ const Cadastro = () => {
 
         if (disciplinaError) throw new Error(disciplinaError.message);
 
-        // Se a disciplina existe, verificar se algum assunto já está cadastrado
         if (existingDisciplina.length > 0) {
-          // Verificar cada assunto
-          for (let i = 0; i < assuntos.length; i++) {
-            const { data: existingAssunto, error: assuntoError } = await supabase
-              .from('disciplinas')
-              .select('id')
-              .eq(`assunto${i + 1}`, assuntos[i])
-              .eq('nome', nomeDisciplina);
-
-            if (assuntoError) throw new Error(assuntoError.message);
-            if (existingAssunto.length > 0) {
-              setMessage(`O Assunto "${assuntos[i]}" já está cadastrado para a disciplina "${nomeDisciplina}".`);
-              return;
-            }
-          }
-          // Se não há assuntos duplicados, adicionar novos assuntos
-          await updateDisciplinaTable(assuntos.length);
-
-          // Adicionar novos assuntos à disciplina existente
-          const disciplinaData = {};
-          assuntos.forEach((assunto, index) => {
-            disciplinaData[`assunto${index + 1}`] = assunto;
-          });
-
-          const { data, error } = await supabase
-            .from('disciplinas')
-            .update(disciplinaData)
-            .eq('nome', nomeDisciplina);
-
-          if (error) throw new Error(error.message);
-          setMessage('Assuntos adicionados com sucesso!');
+          // Atualizar assuntos para disciplina existente
+          await updateDisciplinaAssuntos(nomeDisciplina, assuntos);
         } else {
-          // Se a disciplina não existe, criar nova disciplina e adicionar assuntos
-          const disciplinaData = { nome: nomeDisciplina };
-          assuntos.forEach((assunto, index) => {
-            disciplinaData[`assunto${index + 1}`] = assunto;
-          });
-
-          await updateDisciplinaTable(assuntos.length);
-
-          const { data, error } = await supabase.from('disciplinas').insert([disciplinaData]);
-
-          if (error) throw new Error(error.message);
-          setMessage('Disciplina cadastrada com sucesso!');
+          // Adicionar nova disciplina
+          await addNewDisciplina(nomeDisciplina, assuntos);
         }
-
+        setMessage('Cadastro realizado com sucesso!');
         clearFields();
       } else if (selectedOption === 'escola') {
         const { data, error } = await supabase.from('escola').insert([
@@ -109,16 +70,49 @@ const Cadastro = () => {
     }
   };
 
+  const updateDisciplinaAssuntos = async (disciplinaNome, assuntos) => {
+    // Verificar e adicionar novas colunas, se necessário
+    await updateDisciplinaTable(assuntos.length);
+
+    // Atualizar os assuntos na disciplina existente
+    const disciplinaData = {};
+    assuntos.forEach((assunto, index) => {
+      disciplinaData[`assunto${index + 1}`] = assunto;
+    });
+
+    const { data, error } = await supabase
+      .from('disciplinas')
+      .update(disciplinaData)
+      .eq('nome', disciplinaNome);
+
+    if (error) throw new Error(error.message);
+  };
+
+  const addNewDisciplina = async (disciplinaNome, assuntos) => {
+    // Atualizar a tabela para novas colunas
+    await updateDisciplinaTable(assuntos.length);
+
+    // Inserir nova disciplina com os assuntos
+    const disciplinaData = { nome: disciplinaNome };
+    assuntos.forEach((assunto, index) => {
+      disciplinaData[`assunto${index + 1}`] = assunto;
+    });
+
+    const { data, error } = await supabase.from('disciplinas').insert([disciplinaData]);
+
+    if (error) throw new Error(error.message);
+  };
+
   const updateDisciplinaTable = async (numberOfAssuntos) => {
     const columns = Array.from({ length: numberOfAssuntos }, (_, i) => `assunto${i + 1}`);
     const { error } = await supabase.rpc('update_disciplina_table', { columns });
-  
+
     if (error) {
       console.error('Erro ao atualizar tabela de disciplinas:', error.message);
       throw new Error(error.message);
     }
   };
-  
+
   const clearFields = () => {
     setNomeEscola('');
     setCodigoEscola('');

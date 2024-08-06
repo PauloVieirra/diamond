@@ -44,14 +44,7 @@
     margin-bottom: 20px;
   }
   
-  input {
-    width: 200px;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-  }
-  
+ 
   .save-button {
     width: 250px;
     height: 60px;
