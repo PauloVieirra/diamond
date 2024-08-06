@@ -41,8 +41,11 @@ nav h1 {
 .pagehome {
   display: flex;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
   flex-direction: column;
   height: calc(100vh - 60px);
+  
 }
 .publis-card{
   display: flex;
@@ -52,10 +55,15 @@ nav h1 {
 }
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100%, 1fr)); /* Define o número de colunas e o tamanho mínimo/máximo */
+  grid-template-columns: repeat(auto-fit, minmax(100%, 1fr)); /* Mantém a largura dos cards */
   gap: 2px; /* Espaçamento entre os itens */
   width: 100%; /* Ocupa toda a largura disponível */
+  max-height: 80vh; /* Define uma altura máxima para a lista de cards */
+  overflow-y: auto; /* Adiciona um scroll vertical se necessário */
+  padding-right: 15px; /* Adiciona espaço para barra de rolagem */
 }
+
+
 
 .selects{
   display: flex;

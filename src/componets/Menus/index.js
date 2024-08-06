@@ -4,6 +4,9 @@ import { useAuth } from "../../context/AuthContext";
 import SwitchButton from "../Buttons";
 import { StyleContext } from "../../context/StyleContext";
 import { SlMenu } from "react-icons/sl";
+import { FaMessage } from "react-icons/fa6";
+import { ModalComplit } from "../Modals";
+
 
 import styles from "./style.module.css";
 
@@ -77,7 +80,20 @@ const MenuTopAuth = () => {
 };
 
 const MenuTopApp = () => {
-  const { logout } = useAuth();
+  const { logout, complit, userType, user } = useAuth();
+  const [openModal, setOpenModal] = useState(false);
+
+  console.log(userType);
+ 
+  
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
 
   const navigate = useNavigate();
 
@@ -101,27 +117,69 @@ const MenuTopApp = () => {
         <div className={styles.eRavWrapper}>
           <div className={styles.eRav}>e-RAV</div>
         </div>
+        <div> 
+        
+        </div>
         <div className={styles.navigationtopdesktopbarsearc}>
           <div className={styles.navigationtopdesktopbarsearcInner}>
             <div className={styles.headlineParent}>
+
+             {userType === "ADM" ? (
+              <>
+                <div className={styles.headline}>
+                  <div className={styles.buttonMenu} onClick={() => handleNavigation("/")}>Controle</div>
+                </div>
+                 <div className={styles.headline}>
+                 <div className={styles.buttonMenu} onClick={() => handleNavigation("/Cadastros")}>Cadastros</div>
+               </div>
+               <div className={styles.headline}>
+                <div className={styles.buttonMenu}>Suporte</div>
+              </div>
+              </>
+             ):(
+             <>
               <div
                 className={styles.headline}
                 onClick={() => handleNavigation("/")}
               >
                 <div className={styles.buttonMenu}>Inicio</div>
               </div>
+
               <div className={styles.headline}>
                 <div className={styles.buttonMenu}>Sobre</div>
               </div>
+              
               <div className={styles.headline}>
                 <div className={styles.buttonMenu}>Suporte</div>
               </div>
+              </>
+             )}
+              
+              
+               
+             
               <div className={styles.headline3} />
             </div>
           </div>
         </div>
+       
         <div className={styles.instanceParent}>
           <div className={styles.instancewebin}>
+
+         
+         
+            
+          {complit ? (
+              <div className={styles.aWrapper} onClick={handleOpenModal}>
+                <b className={styles.eRav}><FaMessage style={{color:'#fff'}} /></b>
+              </div>
+            ) : (
+              <div className={styles.aWrapper} open={openModal} onClose={handleCloseModal} >
+               <FaMessage style={{color:'#fff'}} />
+               <div className={styles.circlegreen}/>
+               </div>
+            )}
+
             <div className={styles.aWrapper}>
               <b className={styles.eRav}>A+</b>
             </div>

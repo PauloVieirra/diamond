@@ -1,0 +1,40 @@
+.containerdash {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 60px);
+    flex-direction: column; /* Opcional: Define a direção do layout como coluna se necessário */
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background-color: #f4f4f4;
+    flex: 1; /* Faz com que a dashboard ocupe o espaço restante da div mãe */
+    overflow-y: auto; /* Adiciona rolagem vertical se necessário */
+}
+
+.dashboard-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+.dashboard-card h2 {
+    margin: 0 0 10px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.dashboard-card p {
+    margin: 0;
+    font-size: 2em;
+    color: #555;
+}

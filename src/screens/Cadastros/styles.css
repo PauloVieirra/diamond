@@ -1,0 +1,80 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - 60px);
+    background-color: #f4f4f4;
+  }
+
+  .box{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+  }
+  
+  h1 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  select {
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .form-group input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    margin-bottom: 20px;
+  }
+  
+  input {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  .save-button {
+    width: 250px;
+    height: 60px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 100;
+    bottom: 30px;
+    left: 50%;
+  }
+  
+  .save-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .message {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #d9534f; /* Red for error message */
+  }
+  

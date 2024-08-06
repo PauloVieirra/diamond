@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./style.css";
 
 const PubliCards = ({ publi }) => {
-  console.log("Dados do Publi:", publi);
+  //console.log("Dados do Publi:", publi);
   //const percentual = publi.percentual; // Recebe o percentual do aluno
   //console.log(percentual);
 

@@ -14,13 +14,30 @@ export const useAuth = () => {
 // Provedor de contexto de autenticação
 export const AuthProvider = ({ children }) => {
   const [isLoading, setLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Inicialize como falso até verificar o usuário
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [complit, setComplit] = useState(null);
+  const [professor, setProfessor] = useState(null);
+  const [userType, setUserType] = useState('Tipo de usuário não disponível');
+  const [nome, setNome] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      checkIfProfessor(user.email);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (professor) {
+      setUserType(professor.use_type || 'Tipo de usuário não disponível');
+    }
+  }, [professor]);
 
   // Função para buscar o usuário localmente ou na sessão do Supabase
   const fetchUser = async () => {
@@ -46,8 +63,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao carregar usuário:', error.message);
     }
   };
-  
- 
+
   // Salvar o usuário localmente
   const saveUserLocally = async (user) => {
     await localforage.setItem('user', user);
@@ -109,9 +125,12 @@ export const AuthProvider = ({ children }) => {
       console.log('Cadastro bem-sucedido:', user);
   
       await saveUserLocally(user); // Salvar o usuário localmente com localforage
-  
-     
-  
+
+      // Adicionar o e-mail do usuário na tabela 'professores'
+      await supabase
+        .from('professores')
+        .upsert({ email: user.email }, { onConflict: ['email'] });
+
       navigate('/SignIn'); // Redireciona para a tela inicial após o cadastro
   
       return user;
@@ -143,6 +162,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Função para verificar se o usuário está cadastrado como professor
+  const checkIfProfessor = async (email) => {
+    try {
+      const { data: professor, error } = await supabase
+        .from('professores')
+        .select('id, use_type')
+        .eq('email', email)
+        .maybeSingle();
+  
+      if (error) {
+        throw error;
+      }
+  
+      if (professor) {
+        setComplit(true);
+        setProfessor(professor);
+        console.log('Usuário é um professor cadastrado:', professor);
+      } else {
+        setComplit(false);
+        console.log('Usuário precisa concluir o cadastro.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar cadastro de professor:', error.message);
+    }
+  };
+
   // Função para retornar a lista de itens na tabela "escola"
   const getListaEscolas = async () => {
     try {
@@ -155,8 +200,51 @@ export const AuthProvider = ({ children }) => {
 
       // Retorne a lista de escolas
       return escolas;
+
     } catch (error) {
       console.error('Erro ao obter a lista de escolas:', error.message);
+      throw error;
+    }
+  };
+
+  // Função para salvar ou atualizar os dados do professor
+  const saveProfessorData = async (professorData) => {
+    try {
+      const professorDataWithUID = {
+        ...professorData,
+        uid: user.id, // Associa o ID do usuário logado ao campo uid
+      };
+
+      const { data, error } = await supabase
+        .from('professores')
+        .upsert(professorDataWithUID, {
+          onConflict: ['email'],
+          returning: 'representation',
+        });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data && data.length > 0) {
+        const updatedProfessor = data[0];
+        setProfessor(updatedProfessor);
+        setComplit(true);
+
+        setUser((prevUser) => ({
+          ...prevUser,
+          professor: updatedProfessor,
+        }));
+
+        await saveUserLocally({
+          ...user,
+          professor: updatedProfessor,
+        });
+      }
+
+      console.log('Dados do professor salvos com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar os dados do professor:', error.message);
       throw error;
     }
   };
@@ -167,7 +255,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, isLoading, login, logout, signUp, getUserData, getListaEscolas, handleLoading, fetchUser }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, isLoading, login, logout, signUp, getUserData, getListaEscolas, handleLoading, fetchUser, complit, saveProfessorData, professor, userType }}>
       {children}
     </AuthContext.Provider>
   );

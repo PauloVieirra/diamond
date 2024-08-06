@@ -2,8 +2,11 @@
   "name": "diamond",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/", 
+  "homepage": "/",
   "dependencies": {
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^5.16.6",
     "@supabase/supabase-js": "^2.43.4",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
