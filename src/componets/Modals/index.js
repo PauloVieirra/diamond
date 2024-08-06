@@ -16,10 +16,9 @@ import "./styles.css"; // Importe o CSS customizado, se necessário
 const ModalComplit = () => {
   const { saveProfessorData, getListaEscolas, user } = useAuth();
   
-
   const [formData, setFormData] = useState({
     nome: "",
-    email: "",
+    email: user ? user.email : "", // Preenche o email com o email do usuário logado
     escola: "",
     uid: user ? user.id : "" // Usa o ID do usuário se disponível
   });
@@ -109,6 +108,7 @@ const ModalComplit = () => {
             fullWidth
             margin="normal"
             required
+            disabled // Desativa o campo para garantir que o email do usuário não seja alterado
           />
           <Select
             value={formData.escola}

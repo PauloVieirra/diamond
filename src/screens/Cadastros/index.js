@@ -1,68 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import supabase from '../../servers/SupabaseConect';
+import { StyleContext } from '../../context/StyleContext';
 import './styles.css';
 
 const Cadastro = () => {
-  const [selectedOption, setSelectedOption] = useState('escola');
+  const { darkMode } = useContext(StyleContext);
+  const [selectedTab, setSelectedTab] = useState('escola');
   const [nomeEscola, setNomeEscola] = useState('');
   const [codigoEscola, setCodigoEscola] = useState('');
   const [nomeProfessor, setNomeProfessor] = useState('');
   const [emailProfessor, setEmailProfessor] = useState('');
   const [nomeDisciplina, setNomeDisciplina] = useState('');
-  const [assuntos, setAssuntos] = useState(['']);
+  const [nomeAssunto, setNomeAssunto] = useState('');
+  const [disciplinas, setDisciplinas] = useState([]);
+  const [disciplinaSelecionada, setDisciplinaSelecionada] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     setMessage('');
-  }, [selectedOption]);
+  }, [selectedTab]);
 
-  const handleSelectChange = (e) => {
-    setSelectedOption(e.target.value);
+  useEffect(() => {
+    if (selectedTab === 'assuntos') {
+      fetchDisciplinas();
+    }
+  }, [selectedTab]);
+
+  const fetchDisciplinas = async () => {
+    const { data, error } = await supabase.from('disciplinas').select('id, nome');
+    if (error) {
+      setMessage(`Erro ao buscar disciplinas: ${error.message}`);
+    } else {
+      setDisciplinas(data);
+    }
   };
 
-  const handleAddAssunto = () => {
-    setAssuntos([...assuntos, '']);
-  };
-
-  const handleAssuntoChange = (index, value) => {
-    const newAssuntos = [...assuntos];
-    newAssuntos[index] = value;
-    setAssuntos(newAssuntos);
+  const checkIfExists = async (table, field, value) => {
+    const { data, error } = await supabase.from(table).select('id').eq(field, value);
+    if (error) {
+      setMessage(`Erro ao verificar existência: ${error.message}`);
+      return false;
+    }
+    return data.length > 0;
   };
 
   const handleSave = async () => {
     try {
-      if (selectedOption === 'disciplina') {
-        // Verificar se a disciplina já existe
-        const { data: existingDisciplina, error: disciplinaError } = await supabase
-          .from('disciplinas')
-          .select('id')
-          .eq('nome', nomeDisciplina);
-
-        if (disciplinaError) throw new Error(disciplinaError.message);
-
-        if (existingDisciplina.length > 0) {
-          // Atualizar assuntos para disciplina existente
-          await updateDisciplinaAssuntos(nomeDisciplina, assuntos);
-        } else {
-          // Adicionar nova disciplina
-          await addNewDisciplina(nomeDisciplina, assuntos);
+      if (selectedTab === 'disciplina') {
+        if (await checkIfExists('disciplinas', 'nome', nomeDisciplina)) {
+          setMessage('Disciplina já cadastrada.');
+          return;
         }
-        setMessage('Cadastro realizado com sucesso!');
+        await addNewDisciplina(nomeDisciplina);
+        setMessage('Disciplina cadastrada com sucesso!');
         clearFields();
-      } else if (selectedOption === 'escola') {
+      } else if (selectedTab === 'escola') {
+        if (await checkIfExists('escola', 'nome', nomeEscola)) {
+          setMessage('Escola já cadastrada.');
+          return;
+        }
         const { data, error } = await supabase.from('escola').insert([
           { nome: nomeEscola, codigo: codigoEscola }
         ]);
         if (error) throw new Error(error.message);
-        setMessage('Cadastro realizado com sucesso!');
+        setMessage('Escola cadastrada com sucesso!');
         clearFields();
-      } else if (selectedOption === 'professor') {
+      } else if (selectedTab === 'professor') {
+        if (await checkIfExists('professores', 'email', emailProfessor)) {
+          setMessage('Professor já cadastrado.');
+          return;
+        }
         const { data, error } = await supabase.from('professores').insert([
           { nome: nomeProfessor, email: emailProfessor }
         ]);
         if (error) throw new Error(error.message);
-        setMessage('Cadastro realizado com sucesso!');
+        setMessage('Professor cadastrado com sucesso!');
+        clearFields();
+      } else if (selectedTab === 'assuntos') {
+        if (await checkIfExists('assuntos', 'nome', nomeAssunto)) {
+          setMessage('Assunto já cadastrado.');
+          return;
+        }
+        const { data, error } = await supabase.from('assuntos').insert([
+          { nome: nomeAssunto, disciplina_id: disciplinaSelecionada }
+        ]);
+        if (error) throw new Error(error.message);
+        setMessage('Assunto cadastrado com sucesso!');
         clearFields();
       }
     } catch (error) {
@@ -70,47 +93,9 @@ const Cadastro = () => {
     }
   };
 
-  const updateDisciplinaAssuntos = async (disciplinaNome, assuntos) => {
-    // Verificar e adicionar novas colunas, se necessário
-    await updateDisciplinaTable(assuntos.length);
-
-    // Atualizar os assuntos na disciplina existente
-    const disciplinaData = {};
-    assuntos.forEach((assunto, index) => {
-      disciplinaData[`assunto${index + 1}`] = assunto;
-    });
-
-    const { data, error } = await supabase
-      .from('disciplinas')
-      .update(disciplinaData)
-      .eq('nome', disciplinaNome);
-
+  const addNewDisciplina = async (disciplinaNome) => {
+    const { data, error } = await supabase.from('disciplinas').insert([{ nome: disciplinaNome }]);
     if (error) throw new Error(error.message);
-  };
-
-  const addNewDisciplina = async (disciplinaNome, assuntos) => {
-    // Atualizar a tabela para novas colunas
-    await updateDisciplinaTable(assuntos.length);
-
-    // Inserir nova disciplina com os assuntos
-    const disciplinaData = { nome: disciplinaNome };
-    assuntos.forEach((assunto, index) => {
-      disciplinaData[`assunto${index + 1}`] = assunto;
-    });
-
-    const { data, error } = await supabase.from('disciplinas').insert([disciplinaData]);
-
-    if (error) throw new Error(error.message);
-  };
-
-  const updateDisciplinaTable = async (numberOfAssuntos) => {
-    const columns = Array.from({ length: numberOfAssuntos }, (_, i) => `assunto${i + 1}`);
-    const { error } = await supabase.rpc('update_disciplina_table', { columns });
-
-    if (error) {
-      console.error('Erro ao atualizar tabela de disciplinas:', error.message);
-      throw new Error(error.message);
-    }
   };
 
   const clearFields = () => {
@@ -119,20 +104,14 @@ const Cadastro = () => {
     setNomeProfessor('');
     setEmailProfessor('');
     setNomeDisciplina('');
-    setAssuntos(['']);
+    setNomeAssunto('');
+    setDisciplinaSelecionada('');
   };
 
-  return (
-    <div className="container">
-      <h1>Cadastro</h1>
-      <div className="box">
-        <select onChange={handleSelectChange} value={selectedOption}>
-          <option value="escola">Escola</option>
-          <option value="professor">Professor</option>
-          <option value="disciplina">Disciplina</option>
-        </select>
-
-        {selectedOption === 'escola' && (
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'escola':
+        return (
           <div className="form-group">
             <input
               type="text"
@@ -147,9 +126,9 @@ const Cadastro = () => {
               onChange={(e) => setCodigoEscola(e.target.value)}
             />
           </div>
-        )}
-
-        {selectedOption === 'professor' && (
+        );
+      case 'professor':
+        return (
           <div className="form-group">
             <input
               type="text"
@@ -164,9 +143,9 @@ const Cadastro = () => {
               onChange={(e) => setEmailProfessor(e.target.value)}
             />
           </div>
-        )}
-
-        {selectedOption === 'disciplina' && (
+        );
+      case 'disciplina':
+        return (
           <div className="form-group">
             <input
               type="text"
@@ -174,25 +153,63 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
-            {assuntos.map((assunto, index) => (
-              <div key={index} className="assunto-group">
-                <input
-                  type="text"
-                  placeholder={`Assunto ${index + 1}`}
-                  value={assunto}
-                  onChange={(e) => handleAssuntoChange(index, e.target.value)}
-                />
-              </div>
-            ))}
-            <button onClick={handleAddAssunto} className="add-assunto-button">Adicionar Novo Assunto</button>
           </div>
-        )}
+        );
+      case 'assuntos':
+        return (
+          <div className="form-group">
+            <select
+              value={disciplinaSelecionada}
+              onChange={(e) => setDisciplinaSelecionada(e.target.value)}
+            >
+              <option value="">Selecione uma Disciplina</option>
+              {disciplinas.map((disciplina) => (
+                <option key={disciplina.id} value={disciplina.id}>
+                  {disciplina.nome}
+                </option>
+              ))}
+            </select>
 
-        <button onClick={handleSave} className="save-button">Salvar</button>
+            <input
+              type="text"
+              placeholder="Nome do Assunto"
+              value={nomeAssunto}
+              onChange={(e) => setNomeAssunto(e.target.value)}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
+  return (
+    <main className={`app ${darkMode ? 'dark-mode' : 'light-mode'}`}>
+      <div className='topline'>Cadastro</div>
+      <div className="container">
+        <div className="tabs">
+          <button onClick={() => setSelectedTab('escola')} className={selectedTab === 'escola' ? 'active' : ''}>
+            Escola
+          </button>
+          <button onClick={() => setSelectedTab('professor')} className={selectedTab === 'professor' ? 'active' : ''}>
+            Professor
+          </button>
+          <button onClick={() => setSelectedTab('disciplina')} className={selectedTab === 'disciplina' ? 'active' : ''}>
+            Disciplina
+          </button>
+          <button onClick={() => setSelectedTab('assuntos')} className={selectedTab === 'assuntos' ? 'active' : ''}>
+            Assuntos
+          </button>
+        </div>
+        <div className="tab-content">
+          {renderTabContent()}
+        </div>
         {message && <p className="message">{message}</p>}
       </div>
-    </div>
+      <div className='conttbnsalvar'>
+        <button onClick={handleSave} className="save-button">Salvar</button>
+      </div>
+    </main>
   );
 };
 
