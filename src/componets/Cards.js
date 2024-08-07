@@ -16,7 +16,7 @@ const PubliCards = ({ publi }) => {
         <div className="cardinto"> 
         <div className="cardintorow">
 
-         <div style={{fontSize:'18px', fontWeight:'500'}}>Série:</div> <div style={{fontSize:'18px'}}></div>
+         <div style={{fontSize:'18px', fontWeight:'500'}}>Série:{}</div> <div style={{fontSize:'18px'}}></div>
 
         </div>
 

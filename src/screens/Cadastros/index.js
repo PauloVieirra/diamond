@@ -15,16 +15,43 @@ const Cadastro = () => {
   const [disciplinas, setDisciplinas] = useState([]);
   const [disciplinaSelecionada, setDisciplinaSelecionada] = useState('');
   const [message, setMessage] = useState('');
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [assuntos, setAssuntos] = useState([]);
+  const [escolas, setEscolas] = useState([]);
+  const [professores, setProfessores] = useState([]);
 
   useEffect(() => {
     setMessage('');
-  }, [selectedTab]);
-
-  useEffect(() => {
+    if (selectedTab === 'escola') fetchEscolas();
+    if (selectedTab === 'professor') fetchProfessores();
+    if (selectedTab === 'disciplina') fetchDisciplinas();
     if (selectedTab === 'assuntos') {
       fetchDisciplinas();
+      fetchAssuntos();
     }
   }, [selectedTab]);
+
+  const fetchEscolas = async () => {
+    const { data, error } = await supabase.from('escola').select('id, nome, codigo');
+    if (error) {
+      setMessage(`Erro ao buscar escolas: ${error.message}`);
+    } else {
+      setEscolas(data);
+      setSearchResults(data);
+    }
+  };
+
+  const fetchProfessores = async () => {
+    const { data, error } = await supabase.from('professores').select('id, nome, email');
+    if (error) {
+      setMessage(`Erro ao buscar professores: ${error.message}`);
+    } else {
+      setProfessores(data);
+      setSearchResults(data);
+    }
+  };
 
   const fetchDisciplinas = async () => {
     const { data, error } = await supabase.from('disciplinas').select('id, nome');
@@ -32,7 +59,41 @@ const Cadastro = () => {
       setMessage(`Erro ao buscar disciplinas: ${error.message}`);
     } else {
       setDisciplinas(data);
+      if (selectedTab === 'disciplina') setSearchResults(data);
     }
+  };
+
+  const fetchAssuntos = async () => {
+    const { data, error } = await supabase.from('assuntos').select('id, nome');
+    if (error) {
+      setMessage(`Erro ao buscar assuntos: ${error.message}`);
+    } else {
+      setAssuntos(data);
+      setSearchResults(data);
+    }
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    let results = [];
+    if (selectedTab === 'escola') {
+      results = escolas.filter((escola) =>
+        escola.nome.toLowerCase().includes(term.toLowerCase())
+      );
+    } else if (selectedTab === 'professor') {
+      results = professores.filter((professor) =>
+        professor.nome.toLowerCase().includes(term.toLowerCase())
+      );
+    } else if (selectedTab === 'disciplina') {
+      results = disciplinas.filter((disciplina) =>
+        disciplina.nome.toLowerCase().includes(term.toLowerCase())
+      );
+    } else if (selectedTab === 'assuntos') {
+      results = assuntos.filter((assunto) =>
+        assunto.nome.toLowerCase().includes(term.toLowerCase())
+      );
+    }
+    setSearchResults(results);
   };
 
   const checkIfExists = async (table, field, value) => {
@@ -106,6 +167,8 @@ const Cadastro = () => {
     setNomeDisciplina('');
     setNomeAssunto('');
     setDisciplinaSelecionada('');
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   const renderTabContent = () => {
@@ -125,6 +188,20 @@ const Cadastro = () => {
               value={codigoEscola}
               onChange={(e) => setCodigoEscola(e.target.value)}
             />
+            <input
+              type="text"
+              placeholder="Buscar escola..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                handleSearch(e.target.value);
+              }}
+            />
+            <ul>
+              {searchResults.map((escola) => (
+                <li key={escola.id}>{escola.nome} - {escola.codigo}</li>
+              ))}
+            </ul>
           </div>
         );
       case 'professor':
@@ -142,6 +219,20 @@ const Cadastro = () => {
               value={emailProfessor}
               onChange={(e) => setEmailProfessor(e.target.value)}
             />
+            <input
+              type="text"
+              placeholder="Buscar professor..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                handleSearch(e.target.value);
+              }}
+            />
+            <ul>
+              {searchResults.map((professor) => (
+                <li key={professor.id}>{professor.nome} - {professor.email}</li>
+              ))}
+            </ul>
           </div>
         );
       case 'disciplina':
@@ -153,6 +244,21 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
+
+            <input
+              type="text"
+              placeholder="Buscar disciplina..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                handleSearch(e.target.value);
+              }}
+            />
+            <ul>
+              {searchResults.map((disciplina) => (
+                <li key={disciplina.id}>{disciplina.nome}</li>
+              ))}
+            </ul>
           </div>
         );
       case 'assuntos':
@@ -162,20 +268,33 @@ const Cadastro = () => {
               value={disciplinaSelecionada}
               onChange={(e) => setDisciplinaSelecionada(e.target.value)}
             >
-              <option value="">Selecione uma Disciplina</option>
+              <option value="">Selecione uma disciplina</option>
               {disciplinas.map((disciplina) => (
                 <option key={disciplina.id} value={disciplina.id}>
                   {disciplina.nome}
                 </option>
               ))}
             </select>
-
             <input
               type="text"
               placeholder="Nome do Assunto"
               value={nomeAssunto}
               onChange={(e) => setNomeAssunto(e.target.value)}
             />
+            <input
+              type="text"
+              placeholder="Buscar assunto..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                handleSearch(e.target.value);
+              }}
+            />
+            <ul>
+              {searchResults.map((assunto) => (
+                <li key={assunto.id}>{assunto.nome}</li>
+              ))}
+            </ul>
           </div>
         );
       default:
@@ -184,32 +303,43 @@ const Cadastro = () => {
   };
 
   return (
-    <main className={`app ${darkMode ? 'dark-mode' : 'light-mode'}`}>
-      <div className='topline'>Cadastro</div>
-      <div className="container">
-        <div className="tabs">
-          <button onClick={() => setSelectedTab('escola')} className={selectedTab === 'escola' ? 'active' : ''}>
-            Escola
-          </button>
-          <button onClick={() => setSelectedTab('professor')} className={selectedTab === 'professor' ? 'active' : ''}>
-            Professor
-          </button>
-          <button onClick={() => setSelectedTab('disciplina')} className={selectedTab === 'disciplina' ? 'active' : ''}>
-            Disciplina
-          </button>
-          <button onClick={() => setSelectedTab('assuntos')} className={selectedTab === 'assuntos' ? 'active' : ''}>
-            Assuntos
-          </button>
-        </div>
-        <div className="tab-content">
-          {renderTabContent()}
-        </div>
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`}>
+      <div className="tabs">
+        <button
+          className={selectedTab === 'escola' ? 'active' : ''}
+          onClick={() => setSelectedTab('escola')}
+        >
+          Escola
+        </button>
+        <button
+          className={selectedTab === 'professor' ? 'active' : ''}
+          onClick={() => setSelectedTab('professor')}
+        >
+          Professor
+        </button>
+        <button
+          className={selectedTab === 'disciplina' ? 'active' : ''}
+          onClick={() => setSelectedTab('disciplina')}
+        >
+          Disciplina
+        </button>
+        <button
+          className={selectedTab === 'assuntos' ? 'active' : ''}
+          onClick={() => setSelectedTab('assuntos')}
+        >
+          Assuntos
+        </button>
+      </div>
+      <div className="form-container">
+        {renderTabContent()}
+        
         {message && <p className="message">{message}</p>}
       </div>
-      <div className='conttbnsalvar'>
-        <button onClick={handleSave} className="save-button">Salvar</button>
+      <div className='topline'>
+        <button className='btnsalvar' onClick={handleSave}>Salvar</button>
       </div>
-    </main>
+      
+    </div>
   );
 };
 

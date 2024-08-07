@@ -38,5 +38,32 @@
     align-items: center;
     gap: 5px;
   }
+  .text-cards{
+    background-color: #cccccc00;
+  }
+  .text-card{
+    display: flex;
+    flex-direction: column;
+    border-color: rgba(122, 122, 122, 0.089);
+    border-width: 1px;
+    border-style: inset;
+    margin: 8px;
+    padding: 8px;
+    background-color: #f7f7f7;
+    transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
+    box-shadow: none; /* Inicialmente sem sombra */
+  }
+  .text-card:hover{
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
+  }
+  .text-card input {
+    width: 18px;
+    font-size: 12px;
+  }
+
+
+  .tab{
+    background-color: rgba(0, 255, 255, 0);
+  }
   
   

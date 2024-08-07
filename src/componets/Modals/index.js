@@ -66,6 +66,9 @@ const ModalComplit = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.escola === "" || formData.nome === "") {
+      return; // Não permite salvar se a escola não estiver selecionada
+    }
     try {
       await saveProfessorData(formData);
       console.log("Dados do professor salvos com sucesso!");
@@ -78,6 +81,7 @@ const ModalComplit = () => {
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
       <DialogTitle>Complete seu cadastro</DialogTitle>
+      <div>Dados obrigatórios</div>
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <TextField
@@ -119,6 +123,8 @@ const ModalComplit = () => {
             renderValue={(selected) => (selected ? selected : "Selecione a escola")}
             margin="normal"
             required
+            error={formData.escola === ""}
+            helperText={formData.escola === "" ? "Campo obrigatório" : ""}
           >
             {loading ? (
               <MenuItem disabled>
@@ -138,7 +144,11 @@ const ModalComplit = () => {
         <Button onClick={() => setOpen(false)} color="primary">
           Fechar
         </Button>
-        <Button onClick={handleSubmit} color="primary">
+        <Button
+          onClick={handleSubmit}
+          color="primary"
+          disabled={formData.escola === ""}
+        >
           Salvar
         </Button>
       </DialogActions>
