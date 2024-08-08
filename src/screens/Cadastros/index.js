@@ -21,6 +21,22 @@ const Cadastro = () => {
   const [assuntos, setAssuntos] = useState([]);
   const [escolas, setEscolas] = useState([]);
   const [professores, setProfessores] = useState([]);
+  const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+
+  useEffect(() => {
+    // Verifica se todos os campos necessários estão preenchidos
+    if (
+      nomeEscola &&
+      nomeProfessor &&
+      emailProfessor &&
+      nomeDisciplina &&
+      nomeAssunto
+    ) {
+      setIsSaveDisabled(false);
+    } else {
+      setIsSaveDisabled(true);
+    }
+  }, [nomeEscola, nomeProfessor, emailProfessor, nomeDisciplina, nomeAssunto]);
 
   useEffect(() => {
     setMessage('');
@@ -162,8 +178,6 @@ const Cadastro = () => {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
   };
-  
-  
 
   const addNewDisciplina = async (disciplinaNome) => {
     const { data, error } = await supabase.from('disciplinas').insert([{ nome: disciplinaNome }]);
@@ -347,7 +361,9 @@ const Cadastro = () => {
         {message && <p className="message">{message}</p>}
       </div>
       <div className='topline'>
-        <button className='btnsalvar' onClick={handleSave}>Salvar</button>
+        <button className='btnsalvar' onClick={handleSave} disabled={isSaveDisabled}>
+          Salvar
+        </button>
       </div>
       
     </div>

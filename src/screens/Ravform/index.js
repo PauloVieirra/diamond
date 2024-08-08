@@ -17,65 +17,71 @@ export default function Ravgerador() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCards, setSelectedCards] = useState({});
   const [annotations, setAnnotations] = useState({});
+  const [istea, setIstea] = useState(false); // Campo booleano
+const [faltas, setFaltas] = useState(""); // Campo texto
 
-  useEffect(() => {
-    const fetchPubli = async () => {
-      try {
-        const { data: alunoData, error: alunoError } = await supabase
-          .from("alunos")
-          .select("*")
-          .eq("id", id)
-          .single();
-  
-        if (alunoError) throw alunoError;
-  
-        setPubli(alunoData);
-        setName(alunoData.name);
-        setSerie(alunoData.serie);
-  
-        const { data: disciplinasData, error: disciplinasError } = await supabase
-          .from("disciplinas")
-          .select("*");
-  
-        if (disciplinasError) throw disciplinasError;
-  
-        setDisciplinas(disciplinasData);
-  
-        const { data: bimestreData, error: bimestreError } = await supabase
-          .from("bimestre_1")
-          .select("*")
-          .eq("aluno_id", id)
-          .single();
-  
-        if (bimestreError && bimestreError.code !== 'PGRST116') {
-          console.error(bimestreError);
-          return;
-        }
-  
-        setBimestres(bimestreData || {}); // Inicializa com {} caso não haja dados
-  
-        const { data: assuntosData, error: assuntosError } = await supabase
-          .from("assuntos")
-          .select("*");
-  
-        if (assuntosError) throw assuntosError;
-  
-        const assuntosMap = disciplinasData.reduce((acc, disciplina) => {
-          acc[disciplina.id] = assuntosData.filter(
-            assunto => assunto.disciplina_id === disciplina.id
-          );
-          return acc;
-        }, {});
-  
-        setAssuntos(assuntosMap);
-  
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
+
+useEffect(() => {
+  const fetchPubli = async () => {
+    try {
+      const { data: alunoData, error: alunoError } = await supabase
+        .from("alunos")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (alunoError) throw alunoError;
+
+      setPubli(alunoData);
+      setName(alunoData.name);
+      setSerie(alunoData.serie);
+      setIstea(alunoData.istea); // Define o valor inicial de istea
+      setFaltas(alunoData.faltas); // Define o valor inicial de faltas
+
+      const { data: disciplinasData, error: disciplinasError } = await supabase
+        .from("disciplinas")
+        .select("*");
+
+      if (disciplinasError) throw disciplinasError;
+
+      setDisciplinas(disciplinasData);
+
+      const { data: bimestreData, error: bimestreError } = await supabase
+        .from("bimestre_1")
+        .select("*")
+        .eq("aluno_id", id)
+        .single();
+
+      if (bimestreError && bimestreError.code !== 'PGRST116') {
+        console.error(bimestreError);
+        return;
       }
-    };
-  
-    fetchPubli();
-  }, [id]);
+
+      setBimestres(bimestreData || {});
+
+      const { data: assuntosData, error: assuntosError } = await supabase
+        .from("assuntos")
+        .select("*");
+
+      if (assuntosError) throw assuntosError;
+
+      const assuntosMap = disciplinasData.reduce((acc, disciplina) => {
+        acc[disciplina.id] = assuntosData.filter(
+          assunto => assunto.disciplina_id === disciplina.id
+        );
+        return acc;
+      }, {});
+
+      setAssuntos(assuntosMap);
+
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+    }
+  };
+
+  fetchPubli();
+}, [id]);
+
   
 
   const handleCheckboxChange = async (assunto, value) => {
@@ -210,6 +216,25 @@ export default function Ravgerador() {
   
 
   const handleUpdate = async () => {
+    // Preparar dados para a tabela alunos
+    const alunoData = {
+      istea,
+      faltas,
+      name,
+      serie,
+    };
+  
+    // Atualizar os dados do aluno na tabela alunos
+    const { error: alunoError } = await supabase
+      .from("alunos")
+      .update(alunoData)
+      .eq("id", id);
+  
+    if (alunoError) {
+      console.error("Erro ao atualizar os dados do aluno", alunoError);
+      return;
+    }
+  
     // Preparar dados para a tabela bimestre_1
     const bimestreData = {
       aluno_id: id,
@@ -239,11 +264,12 @@ export default function Ravgerador() {
     alert("Dados atualizados com sucesso!");
   };
   
+  
 
   if (!publi) return <div>Carregando...</div>;
 
   return (
-    <div className="edit-container">
+    <main >
       <h2>Responder RAV</h2>
       <div className="form-group">
         <label>Nome</label>
@@ -254,12 +280,26 @@ export default function Ravgerador() {
         />
       </div>
       <div className="form-group">
-        <label>Série</label>
+      <div className="form-update">
+      <div className="form-pcd">
+        <label>Estudante PCD</label>
+        <input
+          type="checkbox"
+          checked={istea}
+          onChange={(e) => setIstea(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+      </div>
+      <div className="form-faltas">
+      <label>Faltas</label>
         <input
           type="text"
-          value={serie}
-          onChange={(e) => setSerie(e.target.value)}
+          value={faltas}
+          onChange={(e) => setFaltas(e.target.value)}
+          style={{width:"100px", height:"28px"}}
         />
+      </div>
+      </div>
       </div>
       <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
         <TabList>
@@ -334,6 +374,6 @@ export default function Ravgerador() {
       <div className="form-group">
         <button onClick={handleUpdate}>Salvar</button>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,110 +1,149 @@
-/* Adicione isso no seu arquivo de estilos */
+
+.edit-container{
+  display: flex;
+  flex-direction: column;
+
+}
+
 .react-tabs__tab-list {
-    border-bottom: 1px solid #ccc;
-    margin: 0 0 10px;
-    padding: 0;
-  }
-  .react-tabs__tab {
-    display: inline-block;
-    border: 1px solid transparent;
-    border-bottom: none;
-    bottom: -1px;
-    position: relative;
-    list-style: none;
-    padding: 6px 12px;
-    cursor: pointer;
-  }
-  .react-tabs__tab--selected {
-    background: #fff;
-    border-color: #ccc;
-    border-radius: 5px 5px 0 0;
-  }
-  .react-tabs__tab-panel {
-    display: none;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-  }
-  .react-tabs__tab-panel--selected {
-    display: block;
-  }
-  .checkbox-group {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
-  }
-  .checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .text-cards{
-    background-color: #cccccc00;
-  }
-  .text-card{
-    display: flex;
-    flex-direction: column;
-    border-color: rgba(122, 122, 122, 0.089);
-    border-width: 1px;
-    border-style: inset;
-    margin: 8px;
-    padding: 8px;
-    background-color: #f7f7f7;
-    transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
-    box-shadow: none; /* Inicialmente sem sombra */
-  }
-  .text-card:hover{
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
-  }
+  border-bottom: 1px solid #ccc;
+  margin: 0 0 10px;
+  padding: 0;
+}
 
-  .text-card.selected {
-    border: 2px solid #007bff; /* Cor de destaque para indicar a seleção */
-    background-color: #f0f8ff; /* Cor de fundo para destacar o card */
-  }
-  
-  .text-card input {
-    width: 18px;
-    font-size: 12px;
-  }
+.react-tabs__tab {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-bottom: none;
+  bottom: -1px;
+  position: relative;
+  list-style: none;
+  padding: 6px 12px;
+  cursor: pointer;
+}
 
-  .linetitle{
-    display: flex;
-    height: 48px;
-    align-items: flex-end;
-    padding-bottom: 20px;
-  }
+.react-tabs__tab--selected {
+  background: #fff;
+  border-color: #ccc;
+  border-radius: 5px 5px 0 0;
+}
+
+.react-tabs__tab-panel {
+  display: none;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.react-tabs__tab-panel--selected {
+  display: block;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.text-cards {
+  background-color: #cccccc00;
+}
+
+.text-card {
+  display: flex;
+  flex-direction: column;
+  border-color: rgba(122, 122, 122, 0.089);
+  border-width: 1px;
+  border-style: inset;
+  margin: 8px;
+  padding: 8px;
+  background-color: #f7f7f7;
+  transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
+  box-shadow: none; /* Inicialmente sem sombra */
+}
+
+.text-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
+}
+
+.text-card.selected {
+  border: 2px solid #007bff; /* Cor de destaque para indicar a seleção */
+  background-color: #f0f8ff; /* Cor de fundo para destacar o card */
+}
+
+.text-card input {
+  width: 18px;
+  font-size: 12px;
+}
+
+.linetitle {
+  display: flex;
+  height: 48px;
+  align-items: flex-end;
+  padding-bottom: 20px;
+}
+
+.tab {
+  background-color: rgba(0, 255, 255, 0);
+}
+
+.textarea-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.linetitle {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.textarea {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.textarea:focus {
+  border-color: #aaa;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.form-update {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-pcd {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.form-faltas {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 20px;
+}
+
+.form-faltas input{
+  padding: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
 
-  .tab{
-    background-color: rgba(0, 255, 255, 0);
-  }
 
-  .textarea-container {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    border-radius: 4px;
-  }
-  
-  .linetitle {
-    font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 8px;
-  }
-  
-  .textarea {
-    width: 100%;
-    height: 100px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .textarea:focus {
-    border-color: #aaa;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  
+
