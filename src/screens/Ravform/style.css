@@ -56,14 +56,55 @@
   .text-card:hover{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
   }
+
+  .text-card.selected {
+    border: 2px solid #007bff; /* Cor de destaque para indicar a seleção */
+    background-color: #f0f8ff; /* Cor de fundo para destacar o card */
+  }
+  
   .text-card input {
     width: 18px;
     font-size: 12px;
   }
 
+  .linetitle{
+    display: flex;
+    height: 48px;
+    align-items: flex-end;
+    padding-bottom: 20px;
+  }
+
 
   .tab{
     background-color: rgba(0, 255, 255, 0);
+  }
+
+  .textarea-container {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border-radius: 4px;
+  }
+  
+  .linetitle {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  .textarea {
+    width: 100%;
+    height: 100px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .textarea:focus {
+    border-color: #aaa;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   }
   
   

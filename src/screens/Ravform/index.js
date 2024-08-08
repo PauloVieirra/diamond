@@ -11,10 +11,12 @@ export default function Ravgerador() {
   const [name, setName] = useState("");
   const [serie, setSerie] = useState("");
   const [disciplinas, setDisciplinas] = useState([]);
+  const [assuntos, setAssuntos] = useState({});
   const [bimestres, setBimestres] = useState({});
   const [texts, setTexts] = useState({});
   const [activeTab, setActiveTab] = useState(0);
-  const [selectedCard, setSelectedCard] = useState({ title: "", text: "" });
+  const [selectedCards, setSelectedCards] = useState({});
+  const [annotations, setAnnotations] = useState({});
 
   useEffect(() => {
     const fetchPubli = async () => {
@@ -52,6 +54,19 @@ export default function Ravgerador() {
 
         setBimestres(bimestreData);
 
+        const { data: assuntosData, error: assuntosError } = await supabase
+          .from("assuntos")
+          .select("*");
+
+        if (assuntosError) throw assuntosError;
+
+        const assuntosMap = disciplinasData.reduce((acc, disciplina) => {
+          acc[disciplina.id] = assuntosData.filter(assunto => assunto.disciplina_id === disciplina.id);
+          return acc;
+        }, {});
+
+        setAssuntos(assuntosMap);
+
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
       }
@@ -60,11 +75,11 @@ export default function Ravgerador() {
     fetchPubli();
   }, [id]);
 
-  const handleCheckboxChange = async (disciplina, value) => {
+  const handleCheckboxChange = async (assunto, value) => {
     const label = getCheckboxLabel(value);
     setBimestres(prevBimestres => ({
       ...prevBimestres,
-      [disciplina]: label
+      [assunto]: label
     }));
 
     let tableName;
@@ -93,7 +108,7 @@ export default function Ravgerador() {
 
     setTexts(prevTexts => ({
       ...prevTexts,
-      [disciplina]: textsData
+      [assunto]: textsData
     }));
   };
 
@@ -129,37 +144,104 @@ export default function Ravgerador() {
     return (disciplinasRespondidas / totalDisciplinas) * 100;
   };
 
-  const handleCardSelect = (title, text) => {
-    setSelectedCard({ title, text });
+  const handleCardSelect = (assunto, title, text) => {
+    setSelectedCards(prevSelectedCards => ({
+      ...prevSelectedCards,
+      [assunto]: { title, text }
+    }));
   };
 
+  const handleAnnotationChange = (assunto, value) => {
+    setAnnotations(prevAnnotations => ({
+      ...prevAnnotations,
+      [assunto]: value
+    }));
+  };
+
+  const saveResumoData = async () => {
+    for (const disciplina of disciplinas) {
+      for (const assunto of assuntos[disciplina.id] || []) {
+        const selectedCard = selectedCards[assunto.nome];
+        const resumo = annotations[assunto.nome] || "";
+        const rendimento = bimestres[assunto.nome]; // Adicionado essa linha para capturar o valor do radio button
+  
+        if (!selectedCard) continue;
+  
+        // Inserir ou atualizar os dados na tabela relatorio_1
+        const relatorioData = {
+          aluno_id: id,
+          disciplina_id: disciplina.id,
+          resumo: resumo,
+          rendimento: rendimento, // Adicionado essa linha para incluir o valor do radio button na coluna 'rendimento'
+          [assunto.nome]: selectedCard.text // Nome da coluna dinamicamente como nome do assunto
+        };
+  
+        // Primeiro, buscar a linha existente para o aluno
+        const { data: existingData, error: fetchError } = await supabase
+          .from("relatorio_1")
+          .select("*")
+          .eq("aluno_id", id)
+          .single();
+  
+        if (fetchError && fetchError.code !== "PGRST116") {
+          console.error("Erro ao buscar dados existentes em relatorio_1", fetchError);
+          return;
+        }
+  
+        // Atualizar a linha existente ou criar uma nova
+        const { error: relatorioError } = existingData
+          ? await supabase
+              .from("relatorio_1")
+              .update(relatorioData)
+              .eq("aluno_id", id)
+          : await supabase
+              .from("relatorio_1")
+              .insert([relatorioData]);
+  
+        if (relatorioError) {
+          console.error("Erro ao salvar relatorio_1", relatorioError);
+        }
+      }
+    }
+  };
+  
+
   const handleUpdate = async () => {
+    // Preparar dados para a tabela bimestre_1
     const bimestreData = {
       aluno_id: id,
       aluno_name: name,
-      ...bimestres,
-      resumotitle: selectedCard.title,
-      resumotext: selectedCard.text,
       percentual: calculateResponsePercentage(),
+      ...Object.fromEntries(
+        disciplinas.map(disciplina => [
+          disciplina.nome, // Nome da disciplina
+          bimestres[disciplina.nome] || "" // Valor da avaliação (Ruim, Mediano, Bom) ou vazio
+        ])
+      )
     };
-
-    const { error } = await supabase
+  
+    // Salvar dados na tabela bimestre_1
+    const { error: bimestreError } = await supabase
       .from("bimestre_1")
       .upsert(bimestreData);
-
-    if (error) {
-      console.error("Erro ao salvar bimestre_1", error);
+  
+    if (bimestreError) {
+      console.error("Erro ao salvar bimestre_1", bimestreError);
       return;
     }
-
+  
+    // Salvar os dados dos cards selecionados na tabela relatorio_1
+    await saveResumoData();
+  
     alert("Dados atualizados com sucesso!");
   };
+  
 
   if (!publi) return <div>Carregando...</div>;
 
   return (
     <div className="edit-container">
-      <h2>Editar Publicação</h2>
+      <h2>Responder RAV</h2>
       <div className="form-group">
         <label>Nome</label>
         <input
@@ -190,48 +272,64 @@ export default function Ravgerador() {
 
             {disciplinas.map((disciplina, index) => (
               <TabPanel key={index}>
-                <div className="form-group">
-                  <label>{disciplina.nome}</label>
-                  <div className="checkbox-group">
-                    {[1, 2, 3].map((level) => (
-                      <label key={level}>
-                        <input
-                          type="radio"
-                          name={`disciplina-${index}`}
-                          value={level}
-                          checked={getCheckboxValue(bimestres[disciplina.nome]) === level.toString()}
-                          onChange={(e) => handleCheckboxChange(disciplina.nome, e.target.value)}
-                        />
-                        {getCheckboxLabel(level.toString())}
-                      </label>
+                <Tabs>
+                  <TabList>
+                    {assuntos[disciplina.id]?.map((assunto, assuntoIndex) => (
+                      <Tab key={assuntoIndex}>{assunto.nome}</Tab>
                     ))}
-                  </div>
-                </div>
-                {texts[disciplina.nome] && (
-                  <div className="text-cards">
-                    {texts[disciplina.nome].map((text, textIndex) => (
-                      <div key={textIndex} className="text-card">
-                        <div style={{display:'flex', flexDirection:'row-reverse', justifyContent:'flex-end', alignItems:'center', gap:'10px'}}>Selecionar
-                        <input
-                          type="radio"
-                          name={`text-${disciplina.nome}`}
-                          onChange={() => handleCardSelect(text.titulo, text.text)}
-                        />
+                  </TabList>
+
+                  {assuntos[disciplina.id]?.map((assunto, assuntoIndex) => (
+                    <TabPanel key={assuntoIndex}>
+                      <div className="form-group">
+                        <label>Avaliação </label>
+                        <div className="checkbox-group">
+                          {[1, 2, 3].map((level) => (
+                            <label key={level}>
+                              <input
+                                type="radio"
+                                name={`assunto-${assuntoIndex}`}
+                                value={level}
+                                checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
+                                onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
+                              />
+                              {getCheckboxLabel(level.toString())}
+                            </label>
+                          ))}
                         </div>
-                        <h3>{text.titulo}</h3>
-                        <p>{text.text}</p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      
+                      {texts[assunto.nome] && (
+                        <div className="text-cards">
+                          <div className="linetitle">Selecione uma opção abaixo</div>
+                          {texts[assunto.nome].map((text, textIndex) => (
+                            <div 
+                              key={textIndex} 
+                              className={`text-card ${selectedCards[assunto.nome]?.text === text.text ? 'selected' : ''}`} 
+                              onClick={() => handleCardSelect(assunto.nome, text.title, text.text)}
+                            >
+                              <h3>{text.titulo}</h3>
+                              <p>{text.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                        <div className="textarea-container">
+                          <div className="linetitle">Anotação adicional</div>
+                          <textarea className="textarea" placeholder="Digite aqui..." 
+                          value={annotations[assunto.nome] || ""}
+                          onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)} />
+                        </div>
+                    </TabPanel>
+                  ))}
+                </Tabs>
               </TabPanel>
             ))}
           </Tabs>
         </TabPanel>
       </Tabs>
-      <button onClick={handleUpdate}>Salvar</button>
-      <div className="percentage-display">
-        Percentual: {calculateResponsePercentage().toFixed(2)}%
+      <div className="form-group">
+        <button onClick={handleUpdate}>Salvar</button>
       </div>
     </div>
   );
