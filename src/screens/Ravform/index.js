@@ -26,54 +26,57 @@ export default function Ravgerador() {
           .select("*")
           .eq("id", id)
           .single();
-
+  
         if (alunoError) throw alunoError;
-
+  
         setPubli(alunoData);
         setName(alunoData.name);
         setSerie(alunoData.serie);
-
+  
         const { data: disciplinasData, error: disciplinasError } = await supabase
           .from("disciplinas")
           .select("*");
-
+  
         if (disciplinasError) throw disciplinasError;
-
+  
         setDisciplinas(disciplinasData);
-
+  
         const { data: bimestreData, error: bimestreError } = await supabase
           .from("bimestre_1")
           .select("*")
           .eq("aluno_id", id)
           .single();
-
-        if (bimestreError) {
+  
+        if (bimestreError && bimestreError.code !== 'PGRST116') {
           console.error(bimestreError);
           return;
         }
-
-        setBimestres(bimestreData);
-
+  
+        setBimestres(bimestreData || {}); // Inicializa com {} caso não haja dados
+  
         const { data: assuntosData, error: assuntosError } = await supabase
           .from("assuntos")
           .select("*");
-
+  
         if (assuntosError) throw assuntosError;
-
+  
         const assuntosMap = disciplinasData.reduce((acc, disciplina) => {
-          acc[disciplina.id] = assuntosData.filter(assunto => assunto.disciplina_id === disciplina.id);
+          acc[disciplina.id] = assuntosData.filter(
+            assunto => assunto.disciplina_id === disciplina.id
+          );
           return acc;
         }, {});
-
+  
         setAssuntos(assuntosMap);
-
+  
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
       }
     };
-
+  
     fetchPubli();
   }, [id]);
+  
 
   const handleCheckboxChange = async (assunto, value) => {
     const label = getCheckboxLabel(value);

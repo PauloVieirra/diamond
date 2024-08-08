@@ -146,13 +146,24 @@ const Cadastro = () => {
           { nome: nomeAssunto, disciplina_id: disciplinaSelecionada }
         ]);
         if (error) throw new Error(error.message);
-        setMessage('Assunto cadastrado com sucesso!');
+  
+        // Chamar a função add_column_to_relatorio_1 ao salvar os dados
+        const columnName = nomeAssunto.replace(/\s+/g, '_'); // Substituir espaços por underscore
+        const { error: functionError } = await supabase.rpc('add_column_to_relatorio_1', {
+          column_name: columnName
+        });
+  
+        if (functionError) throw new Error(functionError.message);
+  
+        setMessage('Assunto e coluna cadastrados com sucesso!');
         clearFields();
       }
     } catch (error) {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
   };
+  
+  
 
   const addNewDisciplina = async (disciplinaNome) => {
     const { data, error } = await supabase.from('disciplinas').insert([{ nome: disciplinaNome }]);

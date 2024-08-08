@@ -29,9 +29,10 @@ export default function Home() {
       
         
           {user ?  (
-            <div className="containergrid">
-            
+            <div className="grid-container ">
+              
               <ListClass/>
+
               {complit === false &&
                 <ModalComplit/>
               }

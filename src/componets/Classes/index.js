@@ -145,6 +145,7 @@ const ListClass = () => {
 
   return (
     <div className={styles.pagehome}>
+      <div className="containertopbar">
       <div className={styles.container}>
         <div className="wellcomemobi"></div>
         <div className={styles.selects}>
@@ -183,11 +184,8 @@ const ListClass = () => {
             ))}
           </select>
         </div>
-        <div className={styles.selectspdf}>
-          <ImportAlunos />
-        </div>
-      </div>
-      <div className={styles.contSearch}>
+
+        <div className={styles.contSearch}>
         <input
           type="text"
           placeholder="Pesquisar por nome ou série..."
@@ -197,6 +195,12 @@ const ListClass = () => {
         />
       </div>
 
+        <div className={styles.selectspdf}>
+          <ImportAlunos />
+        </div>
+      </div>
+     
+      </div>
       {fetchError && (<p>{fetchError}</p>)}
       {selectedEscola && searchResults && searchResults.length > 0 ? (
         <div className="grid-container">

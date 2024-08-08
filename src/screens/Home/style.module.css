@@ -32,10 +32,15 @@
     padding: 0px 16px 0px 16px;
 }
 
-.containergrid{
-  display: flex;
-  
-}
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100%, 1fr)); /* Mantém a largura dos cards */
+    gap: 2px; /* Espaçamento entre os itens */
+    width: 100%; /* Ocupa toda a largura disponível */
+    max-height: 80vh; /* Define uma altura máxima para a lista de cards */
+    overflow-y: auto; /* Adiciona um scroll vertical se necessário */
+    padding-right: 15px; /* Adiciona espaço para barra de rolagem */
+  }
 
 @media (max-width: 900px) {
 
