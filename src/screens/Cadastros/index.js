@@ -23,12 +23,13 @@ const Cadastro = () => {
   const [professores, setProfessores] = useState([]);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
 
+  // Variables for selected student and subject
+  const [selectedAlunoId, setSelectedAlunoId] = useState('');
+  const [selectedAssuntoId, setSelectedAssuntoId] = useState('');
+
   useEffect(() => {
     // Verifica se todos os campos necessários estão preenchidos
     if (
-      nomeEscola &&
-      nomeProfessor &&
-      emailProfessor &&
       nomeDisciplina &&
       nomeAssunto
     ) {
@@ -36,7 +37,7 @@ const Cadastro = () => {
     } else {
       setIsSaveDisabled(true);
     }
-  }, [nomeEscola, nomeProfessor, emailProfessor, nomeDisciplina, nomeAssunto]);
+  }, [nomeDisciplina, nomeAssunto]);
 
   useEffect(() => {
     setMessage('');
@@ -174,6 +175,20 @@ const Cadastro = () => {
         setMessage('Assunto e coluna cadastrados com sucesso!');
         clearFields();
       }
+
+      // Atualizar texto na tabela resumo_1
+      if (selectedAssuntoId && selectedAlunoId) {
+        const { error: updateError } = await supabase
+          .from('resumo_1')
+          .upsert({
+            aluno_id: selectedAlunoId,
+            assunto_id: selectedAssuntoId,
+            retorno: nomeAssunto // Presumindo que o texto selecionado é o nome do assunto
+          });
+        
+        if (updateError) throw new Error(updateError.message);
+      }
+
     } catch (error) {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
@@ -223,8 +238,8 @@ const Cadastro = () => {
               }}
             />
             <ul>
-              {searchResults.map((escola) => (
-                <li key={escola.id}>{escola.nome} - {escola.codigo}</li>
+              {searchResults.map((item) => (
+                <li key={item.id}>{item.nome} ({item.codigo})</li>
               ))}
             </ul>
           </div>
@@ -254,8 +269,8 @@ const Cadastro = () => {
               }}
             />
             <ul>
-              {searchResults.map((professor) => (
-                <li key={professor.id}>{professor.nome} - {professor.email}</li>
+              {searchResults.map((item) => (
+                <li key={item.id}>{item.nome} ({item.email})</li>
               ))}
             </ul>
           </div>
@@ -269,7 +284,6 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
-
             <input
               type="text"
               placeholder="Buscar disciplina..."
@@ -280,8 +294,8 @@ const Cadastro = () => {
               }}
             />
             <ul>
-              {searchResults.map((disciplina) => (
-                <li key={disciplina.id}>{disciplina.nome}</li>
+              {searchResults.map((item) => (
+                <li key={item.id}>{item.nome}</li>
               ))}
             </ul>
           </div>
@@ -289,23 +303,21 @@ const Cadastro = () => {
       case 'assuntos':
         return (
           <div className="form-group">
-            <select
-              value={disciplinaSelecionada}
-              onChange={(e) => setDisciplinaSelecionada(e.target.value)}
-            >
-              <option value="">Selecione uma disciplina</option>
-              {disciplinas.map((disciplina) => (
-                <option key={disciplina.id} value={disciplina.id}>
-                  {disciplina.nome}
-                </option>
-              ))}
-            </select>
             <input
               type="text"
               placeholder="Nome do Assunto"
               value={nomeAssunto}
               onChange={(e) => setNomeAssunto(e.target.value)}
             />
+            <select
+              value={disciplinaSelecionada}
+              onChange={(e) => setDisciplinaSelecionada(e.target.value)}
+            >
+              <option value="">Selecione uma Disciplina</option>
+              {disciplinas.map((disciplina) => (
+                <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
+              ))}
+            </select>
             <input
               type="text"
               placeholder="Buscar assunto..."
@@ -316,8 +328,8 @@ const Cadastro = () => {
               }}
             />
             <ul>
-              {searchResults.map((assunto) => (
-                <li key={assunto.id}>{assunto.nome}</li>
+              {searchResults.map((item) => (
+                <li key={item.id}>{item.nome}</li>
               ))}
             </ul>
           </div>
@@ -330,42 +342,21 @@ const Cadastro = () => {
   return (
     <div className={`container ${darkMode ? 'dark-mode' : ''}`}>
       <div className="tabs">
-        <button
-          className={selectedTab === 'escola' ? 'active' : ''}
-          onClick={() => setSelectedTab('escola')}
-        >
-          Escola
-        </button>
-        <button
-          className={selectedTab === 'professor' ? 'active' : ''}
-          onClick={() => setSelectedTab('professor')}
-        >
-          Professor
-        </button>
-        <button
-          className={selectedTab === 'disciplina' ? 'active' : ''}
-          onClick={() => setSelectedTab('disciplina')}
-        >
-          Disciplina
-        </button>
-        <button
-          className={selectedTab === 'assuntos' ? 'active' : ''}
-          onClick={() => setSelectedTab('assuntos')}
-        >
-          Assuntos
-        </button>
+        <button onClick={() => setSelectedTab('escola')}>Escola</button>
+        <button onClick={() => setSelectedTab('professor')}>Professor</button>
+        <button onClick={() => setSelectedTab('disciplina')}>Disciplina</button>
+        <button onClick={() => setSelectedTab('assuntos')}>Assuntos</button>
       </div>
-      <div className="form-container">
+      <div className="tab-content">
         {renderTabContent()}
-        
-        {message && <p className="message">{message}</p>}
-      </div>
-      <div className='topline'>
-        <button className='btnsalvar' onClick={handleSave} disabled={isSaveDisabled}>
+        <button
+          onClick={handleSave}
+          disabled={isSaveDisabled}
+        >
           Salvar
         </button>
       </div>
-      
+      {message && <p className="message">{message}</p>}
     </div>
   );
 };

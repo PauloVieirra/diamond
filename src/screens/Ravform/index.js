@@ -172,33 +172,76 @@ useEffect(() => {
       for (const assunto of assuntos[disciplina.id] || []) {
         const selectedCard = selectedCards[assunto.nome];
         const resumo = annotations[assunto.nome] || "";
-        const rendimento = bimestres[assunto.nome]; // Adicionado essa linha para capturar o valor do radio button
+        const rendimento = bimestres[assunto.nome]; // Valor do radio button
   
-        if (!selectedCard) continue;
+        if (!selectedCard && !resumo && !rendimento) continue; // Ignorar se todos os campos estiverem vazios
+  
+        // Verificar se já existe uma entrada para este aluno e assunto
+        const { data: existingResumo, error: fetchResumoError } = await supabase
+          .from("resumo_1")
+          .select("*")
+          .eq("aluno_id", id)
+          .eq("assunto_id", assunto.id)
+          .single();
+  
+        if (fetchResumoError && fetchResumoError.code !== "PGRST116") {
+          console.error("Erro ao buscar dados existentes em resumo_1", fetchResumoError);
+          return;
+        }
+  
+        // Preparar os dados para inserção ou atualização
+        const resumoData = {
+          aluno_id: id,
+          disciplina_id: disciplina.id,
+          assunto_id: assunto.id,
+          rendimento: rendimento || existingResumo?.rendimento || null, 
+          avaliacao: resumo || existingResumo?.avaliacao || null,
+          retorno: selectedCard?.text || existingResumo?.retorno || null // Adicionar o campo retorno
+        };
+  
+        let resumoError;
+        if (existingResumo) {
+          // Atualizar a entrada existente
+          const { error: updateResumoError } = await supabase
+            .from("resumo_1")
+            .update(resumoData)
+            .eq("aluno_id", id)
+            .eq("assunto_id", assunto.id);
+          resumoError = updateResumoError;
+        } else {
+          // Inserir uma nova entrada
+          const { error: insertResumoError } = await supabase
+            .from("resumo_1")
+            .insert([resumoData]);
+          resumoError = insertResumoError;
+        }
+  
+        if (resumoError) {
+          console.error("Erro ao salvar na tabela resumo_1", resumoError);
+        }
   
         // Inserir ou atualizar os dados na tabela relatorio_1
         const relatorioData = {
           aluno_id: id,
           disciplina_id: disciplina.id,
-          resumo: resumo,
-          rendimento: rendimento, // Adicionado essa linha para incluir o valor do radio button na coluna 'rendimento'
-          [assunto.nome]: selectedCard.text // Nome da coluna dinamicamente como nome do assunto
+          resumo: resumo || existingResumo?.avaliacao || null, // Manter dados existentes se o campo for vazio
+          [assunto.nome]: selectedCard?.text || existingResumo?.[assunto.nome] || null // Evitar sobreposição de dados se o campo estiver vazio
         };
   
         // Primeiro, buscar a linha existente para o aluno
-        const { data: existingData, error: fetchError } = await supabase
+        const { data: existingRelatorio, error: fetchRelatorioError } = await supabase
           .from("relatorio_1")
           .select("*")
           .eq("aluno_id", id)
           .single();
   
-        if (fetchError && fetchError.code !== "PGRST116") {
-          console.error("Erro ao buscar dados existentes em relatorio_1", fetchError);
+        if (fetchRelatorioError && fetchRelatorioError.code !== "PGRST116") {
+          console.error("Erro ao buscar dados existentes em relatorio_1", fetchRelatorioError);
           return;
         }
   
         // Atualizar a linha existente ou criar uma nova
-        const { error: relatorioError } = existingData
+        const { error: relatorioError } = existingRelatorio
           ? await supabase
               .from("relatorio_1")
               .update(relatorioData)
@@ -213,6 +256,8 @@ useEffect(() => {
       }
     }
   };
+  
+  
   
 
   const handleUpdate = async () => {
