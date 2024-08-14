@@ -4,6 +4,7 @@ import ListClass from "../../componets/Classes";
 import { useAuth } from "../../context/AuthContext";
 import { StyleContext } from "../../context/StyleContext.js";
 import { ModalComplit } from "../../componets/Modals/index.js";
+import { FooterWeb } from "../../componets/Footer/index.js";
 import styles from './style.module.css';
 
 
@@ -43,6 +44,7 @@ export default function Home() {
        
        
       </div>
+       <FooterWeb/>
     </main>
   );
 }

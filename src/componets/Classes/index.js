@@ -55,6 +55,7 @@ const ListClass = () => {
   useEffect(() => {
     const fetchProfessorData = async () => {
       if (user && user.email) {
+
         const { data: professorData, error: professorError } = await supabase
           .from('professores')
           .select('escola')

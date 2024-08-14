@@ -127,9 +127,16 @@
 }
 
 .form-pcd {
-  display: flex;
+  display: grid;
   width: 100%;
-  align-items: flex-start;
+  grid-template-columns: repeat(6, 1fr); /* Define exatamente 5 colunas */
+  gap: 16px; /* Espaço entre os itens */
+}
+
+.form-pcd input{
+  border-style: hidden;
+  border: 1px;
+  border-color: #585858;
 }
 
 .form-faltas {
@@ -144,6 +151,11 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.line{
+  display: flex;
+  width: 100%;
+  height: 48px;
+}
 
 
 

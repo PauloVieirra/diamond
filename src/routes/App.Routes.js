@@ -22,7 +22,6 @@ function AppRoutes  () {
         <Route path='/Ravform/:id' element={<Ravform/>}/>
         <Route path='/RavGerador/:id' element={<RavGerador/>}/>
       </Routes> 
-      <FooterWeb/>
     </div>
   );
 };

@@ -17,8 +17,19 @@ export default function Ravgerador() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCards, setSelectedCards] = useState({});
   const [annotations, setAnnotations] = useState({});
-  const [istea, setIstea] = useState(false); // Campo booleano
-const [faltas, setFaltas] = useState(""); // Campo texto
+  const [istea, setIstea] = useState(false); 
+  const [turno, setTurno] = useState("");
+  const [turma, setTurma] = useState("");
+  const [curso, setCurso] = useState(""); 
+  const [faltas, setFaltas] = useState(""); 
+  const [adequacao, setAdequacao] = useState(false); 
+  const [temporalidade, setTemporalidade] = useState(false); 
+  const [saladerecursos, setSaladerecursos ] = useState (false);
+  const [superacao, setSuperacao ] = useState (false);
+  const [superacaomodelo, setSuperacaomodelo ] = useState (" ");
+  const [superacaodefinicao, setSuperacaodefinicao] = useState("");
+  const [aplicacao, setAplicacao] = useState(false);
+  const [options, setOptions] = useState([]); // Definindo o estado options
 
 
 useEffect(() => {
@@ -35,8 +46,19 @@ useEffect(() => {
       setPubli(alunoData);
       setName(alunoData.name);
       setSerie(alunoData.serie);
-      setIstea(alunoData.istea); // Define o valor inicial de istea
-      setFaltas(alunoData.faltas); // Define o valor inicial de faltas
+      setIstea(alunoData.istea); 
+      setFaltas(alunoData.faltas);
+      setTurno(alunoData.Turno);
+      setCurso(alunoData.curso);
+      setTurma(alunoData.turma);
+      setAplicacao(alunoData.aplicacao);
+      setAdequacao(alunoData.adequacao);
+      setTemporalidade(alunoData.temporalidade)
+      setSaladerecursos(alunoData.saladerecursos);
+      setSuperacao(alunoData.superacao);
+      setSuperacaomodelo(alunoData.superacaomodelo);
+      setSuperacaodefinicao(alunoData.superacaodefinicao);
+      
 
       const { data: disciplinasData, error: disciplinasError } = await supabase
         .from("disciplinas")
@@ -119,7 +141,37 @@ useEffect(() => {
       ...prevTexts,
       [assunto]: textsData
     }));
+
   };
+
+  useEffect(() => {
+    // Defina as opções para o campo de seleção
+    setOptions([
+      "Classe comum com atendimento personalizado.",
+      "Turma SuperAção.",
+      "Turma SuperAção Reduzida."
+    ]);
+  }, []);
+
+  const iEducarArray = [
+    "Classe comum com atendimento personalizado.",
+    "Turma SuperAção.",
+    "Turma SuperAção Reduzida."
+  ];
+
+  const handleiEducar = (e) => {
+    setSuperacao(e.target.checked);
+    if (e.target.checked) {
+      setSuperacaodefinicao(iEducarArray.join("\n"));
+    } else {
+      setSuperacaodefinicao("");
+    }
+  };
+
+  const handleTextChange = (e) => {
+    setSuperacaomodelo(e.target.value);
+  };
+  
 
   const getCheckboxLabel = (value) => {
     switch (value) {
@@ -267,6 +319,16 @@ useEffect(() => {
       faltas,
       name,
       serie,
+      turma,
+      curso,
+      aplicacao,
+      adequacao,
+      temporalidade,
+      saladerecursos,
+      superacao,
+      superacaomodelo,
+      superacaodefinicao,
+    
     };
   
     // Atualizar os dados do aluno na tabela alunos
@@ -327,16 +389,94 @@ useEffect(() => {
       <div className="form-group">
       <div className="form-update">
       <div className="form-pcd">
-        <label>Estudante PCD</label>
+      <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Estudante PCD </div>
         <input
           type="checkbox"
           checked={istea}
           onChange={(e) => setIstea(e.target.checked)}
           style={{width:"100px", height:"28px"}}
         />
+         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Adequacao curricular </div>
+        <input
+          type="checkbox"
+          checked={adequacao}
+          onChange={(e) => setAdequacao(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Indicado para temporalidade </div>
+        <input
+          type="checkbox"
+          checked={temporalidade}
+          onChange={(e) => setTemporalidade(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Sala de recursos </div>
+        <input
+          type="checkbox"
+          checked={saladerecursos}
+          onChange={(e) => setSaladerecursos(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+          <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Aplicação Curricular Programa SuperAção </div>
+        <input
+          type="checkbox"
+          checked={aplicacao}
+          onChange={(e) => setAplicacao(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>SuperAção - iEducar </div>
+        <input
+          type="checkbox"
+          checked={superacao}
+          onChange={(e) => setSuperacao(e.target.checked)}
+          style={{width:"100px", height:"28px"}}
+        />
+        
+        {superacao && (
+          <div style={{ display: 'flex', alignItems: 'center', width: 'auto', height: '48px' }}>
+            SuperAção/Modelo
+            <select
+              value={superacaomodelo}
+              onChange={handleTextChange}
+              style={{ width: '200px', height: '28px', marginLeft: '10px' }}
+            >
+              <option value="" disabled>Selecione uma frase</option>
+              {options.map((frase, index) => (
+                <option key={index} value={frase}>
+                  {frase}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+       
+       
       </div>
-      <div className="form-faltas">
-      <label>Faltas</label>
+
+      <div className="line">
+      <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Turno</div>
+        <input
+          type="text"
+          value={turno}
+          onChange={(e) => setTurno(e.target.value)}
+          style={{width:"100px", height:"28px"}}
+        />
+          <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Serie</div>
+        <input
+          type="text"
+          value={curso}
+          onChange={(e) => setCurso(e.target.value)}
+          style={{width:"100px", height:"28px"}}
+        />
+        <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Turma</div>
+        <input
+          type="text"
+          value={turma}
+          onChange={(e) => setTurma(e.target.value)}
+          style={{width:"100px", height:"28px"}}
+        />
+          <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Faltas</div>
         <input
           type="text"
           value={faltas}
