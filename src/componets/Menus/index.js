@@ -152,6 +152,10 @@ const MenuTopApp = () => {
               <div className={styles.headline}>
                 <div className={styles.buttonMenu}>Suporte</div>
               </div>
+
+              <div className={styles.contemail}>
+              {user?.email ? <span>{user.email}</span> : ''}
+              </div>
               </>
              )}
               
