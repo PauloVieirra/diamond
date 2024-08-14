@@ -29,15 +29,13 @@ const Cadastro = () => {
 
   useEffect(() => {
     // Verifica se todos os campos necessários estão preenchidos
-    if (
-      nomeDisciplina &&
-      nomeAssunto
-    ) {
-      setIsSaveDisabled(false);
-    } else {
-      setIsSaveDisabled(true);
-    }
-  }, [nomeDisciplina, nomeAssunto]);
+    setIsSaveDisabled(
+      !(selectedTab === 'escola' && nomeEscola && codigoEscola) &&
+      !(selectedTab === 'professor' && nomeProfessor && emailProfessor) &&
+      !(selectedTab === 'disciplina' && nomeDisciplina) &&
+      !(selectedTab === 'assuntos' && nomeAssunto && disciplinaSelecionada)
+    );
+  }, [nomeEscola, codigoEscola, nomeProfessor, emailProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab]);
 
   useEffect(() => {
     setMessage('');
@@ -129,74 +127,54 @@ const Cadastro = () => {
           setMessage('Disciplina já cadastrada.');
           return;
         }
-        await addNewDisciplina(nomeDisciplina);
+        await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
         setMessage('Disciplina cadastrada com sucesso!');
-        clearFields();
       } else if (selectedTab === 'escola') {
         if (await checkIfExists('escola', 'nome', nomeEscola)) {
           setMessage('Escola já cadastrada.');
           return;
         }
-        const { data, error } = await supabase.from('escola').insert([
-          { nome: nomeEscola, codigo: codigoEscola }
-        ]);
-        if (error) throw new Error(error.message);
+        const { error } = await supabase.from('escola').insert([{ nome: nomeEscola, codigo: codigoEscola }]);
+        if (error) throw error;
         setMessage('Escola cadastrada com sucesso!');
-        clearFields();
       } else if (selectedTab === 'professor') {
         if (await checkIfExists('professores', 'email', emailProfessor)) {
           setMessage('Professor já cadastrado.');
           return;
         }
-        const { data, error } = await supabase.from('professores').insert([
-          { nome: nomeProfessor, email: emailProfessor }
-        ]);
-        if (error) throw new Error(error.message);
+        const { error } = await supabase.from('professores').insert([{ nome: nomeProfessor, email: emailProfessor }]);
+        if (error) throw error;
         setMessage('Professor cadastrado com sucesso!');
-        clearFields();
       } else if (selectedTab === 'assuntos') {
         if (await checkIfExists('assuntos', 'nome', nomeAssunto)) {
           setMessage('Assunto já cadastrado.');
           return;
         }
-        const { data, error } = await supabase.from('assuntos').insert([
-          { nome: nomeAssunto, disciplina_id: disciplinaSelecionada }
-        ]);
-        if (error) throw new Error(error.message);
-  
+        const { error: insertError } = await supabase.from('assuntos').insert([{ nome: nomeAssunto, disciplina_id: disciplinaSelecionada }]);
+        if (insertError) throw insertError;
+
         // Chamar a função add_column_to_relatorio_1 ao salvar os dados
         const columnName = nomeAssunto.replace(/\s+/g, '_'); // Substituir espaços por underscore
-        const { error: functionError } = await supabase.rpc('add_column_to_relatorio_1', {
-          column_name: columnName
-        });
-  
-        if (functionError) throw new Error(functionError.message);
-  
+        const { error: functionError } = await supabase.rpc('add_column_to_relatorio_1', { column_name: columnName });
+        if (functionError) throw functionError;
+
         setMessage('Assunto e coluna cadastrados com sucesso!');
-        clearFields();
       }
 
       // Atualizar texto na tabela resumo_1
       if (selectedAssuntoId && selectedAlunoId) {
-        const { error: updateError } = await supabase
-          .from('resumo_1')
-          .upsert({
-            aluno_id: selectedAlunoId,
-            assunto_id: selectedAssuntoId,
-            retorno: nomeAssunto // Presumindo que o texto selecionado é o nome do assunto
-          });
-        
-        if (updateError) throw new Error(updateError.message);
+        const { error: updateError } = await supabase.from('resumo_1').upsert({
+          aluno_id: selectedAlunoId,
+          assunto_id: selectedAssuntoId,
+          retorno: nomeAssunto
+        });
+        if (updateError) throw updateError;
       }
 
+      clearFields();
     } catch (error) {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
-  };
-
-  const addNewDisciplina = async (disciplinaNome) => {
-    const { data, error } = await supabase.from('disciplinas').insert([{ nome: disciplinaNome }]);
-    if (error) throw new Error(error.message);
   };
 
   const clearFields = () => {
@@ -228,20 +206,6 @@ const Cadastro = () => {
               value={codigoEscola}
               onChange={(e) => setCodigoEscola(e.target.value)}
             />
-            <input
-              type="text"
-              placeholder="Buscar escola..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                handleSearch(e.target.value);
-              }}
-            />
-            <ul>
-              {searchResults.map((item) => (
-                <li key={item.id}>{item.nome} ({item.codigo})</li>
-              ))}
-            </ul>
           </div>
         );
       case 'professor':
@@ -259,20 +223,6 @@ const Cadastro = () => {
               value={emailProfessor}
               onChange={(e) => setEmailProfessor(e.target.value)}
             />
-            <input
-              type="text"
-              placeholder="Buscar professor..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                handleSearch(e.target.value);
-              }}
-            />
-            <ul>
-              {searchResults.map((item) => (
-                <li key={item.id}>{item.nome} ({item.email})</li>
-              ))}
-            </ul>
           </div>
         );
       case 'disciplina':
@@ -284,20 +234,6 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
-            <input
-              type="text"
-              placeholder="Buscar disciplina..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                handleSearch(e.target.value);
-              }}
-            />
-            <ul>
-              {searchResults.map((item) => (
-                <li key={item.id}>{item.nome}</li>
-              ))}
-            </ul>
           </div>
         );
       case 'assuntos':
@@ -313,25 +249,13 @@ const Cadastro = () => {
               value={disciplinaSelecionada}
               onChange={(e) => setDisciplinaSelecionada(e.target.value)}
             >
-              <option value="">Selecione uma Disciplina</option>
+              <option value="">Selecione a Disciplina</option>
               {disciplinas.map((disciplina) => (
-                <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
+                <option key={disciplina.id} value={disciplina.id}>
+                  {disciplina.nome}
+                </option>
               ))}
             </select>
-            <input
-              type="text"
-              placeholder="Buscar assunto..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                handleSearch(e.target.value);
-              }}
-            />
-            <ul>
-              {searchResults.map((item) => (
-                <li key={item.id}>{item.nome}</li>
-              ))}
-            </ul>
           </div>
         );
       default:
@@ -347,7 +271,7 @@ const Cadastro = () => {
         <button onClick={() => setSelectedTab('disciplina')}>Disciplina</button>
         <button onClick={() => setSelectedTab('assuntos')}>Assuntos</button>
       </div>
-      <div className="tab-content">
+      <div className="content">
         {renderTabContent()}
         <button
           onClick={handleSave}
@@ -356,7 +280,7 @@ const Cadastro = () => {
           Salvar
         </button>
       </div>
-      {message && <p className="message">{message}</p>}
+      {message && <div className="message">{message}</div>}
     </div>
   );
 };

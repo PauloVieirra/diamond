@@ -46,17 +46,13 @@ export const AuthProvider = ({ children }) => {
       if (storedUser) {
         setIsLoggedIn(true);
         setUser(storedUser);
-        console.log('Usuário logado:', storedUser);
       } else {
         const { data: session, error } = await supabase.auth.getSession();
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
         if (session && session.user) {
           setIsLoggedIn(true);
           setUser(session.user);
           await saveUserLocally(session.user);
-          console.log('Usuário logado:', session.user);
         }
       }
     } catch (error) {
@@ -69,36 +65,6 @@ export const AuthProvider = ({ children }) => {
     await localforage.setItem('user', user);
   };
 
-  // Função de login
-  const login = async (email, password) => {
-    try {
-      setLoading(true); // Ativa o loading antes do login
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        throw new Error("Ocorreu um erro ao fazer login. Por favor, tente novamente mais tarde.");
-      }
-
-      console.log('Login bem-sucedido:', user);
-      setIsLoggedIn(true);
-      setUser(user);
-
-      await saveUserLocally(user); // Salvar o usuário localmente com localforage
-      navigate('/'); // Redirecionar para a tela inicial
-
-      return user;
-    } catch (error) {
-      console.error('Erro ao fazer login:', error.message);
-      throw error;
-    } finally {
-      setLoading(false); // Desativa o loading após o login
-    }
-  };
-
   // Função para obter os dados do usuário atual
   const getUserData = async () => {
     if (!user) {
@@ -108,39 +74,54 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Função de cadastro
-  const signUp = async (email, password) => {
+const signUp = async (email, password) => {
+  try {
+    setLoading(true);
+    const { user, error } = await supabase.auth.signUp({
+      email,
+      password,
+      sendEmailVerification: false
+    });
+
+    if (error) throw new Error(error.message);
+
+    await saveUserLocally(user);
+
+    return { user }; // Apenas retornar o usuário após o cadastro
+  } catch (error) {
+    console.error('Erro ao fazer cadastro:', error.message);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // Função de login
+  const login = async (email, password) => {
     try {
-      setLoading(true); // Ativa o loading antes do cadastro
-
-      const { user, error } = await supabase.auth.signUp({
+      setLoading(true);
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        sendEmailVerification: false
+        password
       });
-  
-      if (error) {
-        throw new Error(error.message);
-      }
-  
-      console.log('Cadastro bem-sucedido:', user);
-  
-      await saveUserLocally(user); // Salvar o usuário localmente com localforage
 
-      // Adicionar o e-mail do usuário na tabela 'professores'
-      await supabase
-        .from('professores')
-        .upsert({ email: user.email }, { onConflict: ['email'] });
+      if (error) throw new Error(error.message);
 
-      navigate('/SignIn'); // Redireciona para a tela inicial após o cadastro
-  
-      return user;
+      setIsLoggedIn(true);
+      setUser(user);
+      await saveUserLocally(user);
+      navigate('/'); // Redirecionar para a tela inicial
+
+      return { user };
     } catch (error) {
-      console.error('Erro ao fazer cadastro:', error.message);
+      console.error('Erro ao fazer login:', error.message);
       throw error;
     } finally {
-      setLoading(false); // Desativa o loading após o cadastro
+      setLoading(false);
     }
   };
+
 
   // Função de logout
   const logout = async () => {

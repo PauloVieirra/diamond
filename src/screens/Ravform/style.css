@@ -1,7 +1,8 @@
 
-.edit-container{
+.containermain{
   display: flex;
   flex-direction: column;
+  padding: 16px;
 
 }
 

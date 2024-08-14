@@ -376,9 +376,12 @@ useEffect(() => {
   if (!publi) return <div>Carregando...</div>;
 
   return (
-    <main >
-      <h2>Responder RAV</h2>
-      <div className="form-group">
+    <main>
+      <div className="containermain">
+        <div className="containermain__header">
+           <h2>Responder RAV</h2>
+        </div>
+      <div className="cont-name">
         <label>Nome</label>
         <input
           type="text"
@@ -386,6 +389,7 @@ useEffect(() => {
           onChange={(e) => setName(e.target.value)}
         />
       </div>
+
       <div className="form-group">
       <div className="form-update">
       <div className="form-pcd">
@@ -558,6 +562,7 @@ useEffect(() => {
       </Tabs>
       <div className="form-group">
         <button onClick={handleUpdate}>Salvar</button>
+      </div>
       </div>
     </main>
   );
