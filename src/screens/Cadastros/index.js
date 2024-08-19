@@ -8,14 +8,13 @@ const Cadastro = () => {
   const [selectedTab, setSelectedTab] = useState('escola');
   const [nomeEscola, setNomeEscola] = useState('');
   const [codigoEscola, setCodigoEscola] = useState('');
-  const [nomeProfessor, setNomeProfessor] = useState('');
   const [emailProfessor, setEmailProfessor] = useState('');
+  const [senhaProfessor, setSenhaProfessor] = useState('');
   const [nomeDisciplina, setNomeDisciplina] = useState('');
   const [nomeAssunto, setNomeAssunto] = useState('');
   const [disciplinas, setDisciplinas] = useState([]);
   const [disciplinaSelecionada, setDisciplinaSelecionada] = useState('');
   const [message, setMessage] = useState('');
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [assuntos, setAssuntos] = useState([]);
@@ -31,11 +30,11 @@ const Cadastro = () => {
     // Verifica se todos os campos necessários estão preenchidos
     setIsSaveDisabled(
       !(selectedTab === 'escola' && nomeEscola && codigoEscola) &&
-      !(selectedTab === 'professor' && nomeProfessor && emailProfessor) &&
+      !(selectedTab === 'professor' && emailProfessor && senhaProfessor) &&
       !(selectedTab === 'disciplina' && nomeDisciplina) &&
       !(selectedTab === 'assuntos' && nomeAssunto && disciplinaSelecionada)
     );
-  }, [nomeEscola, codigoEscola, nomeProfessor, emailProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab]);
+  }, [nomeEscola, codigoEscola, emailProfessor, senhaProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab]);
 
   useEffect(() => {
     setMessage('');
@@ -97,7 +96,7 @@ const Cadastro = () => {
       );
     } else if (selectedTab === 'professor') {
       results = professores.filter((professor) =>
-        professor.nome.toLowerCase().includes(term.toLowerCase())
+        professor.email.toLowerCase().includes(term.toLowerCase())
       );
     } else if (selectedTab === 'disciplina') {
       results = disciplinas.filter((disciplina) =>
@@ -127,7 +126,8 @@ const Cadastro = () => {
           setMessage('Disciplina já cadastrada.');
           return;
         }
-        await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
+        const { error: insertError } = await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
+        if (insertError) throw insertError;
         setMessage('Disciplina cadastrada com sucesso!');
       } else if (selectedTab === 'escola') {
         if (await checkIfExists('escola', 'nome', nomeEscola)) {
@@ -138,13 +138,23 @@ const Cadastro = () => {
         if (error) throw error;
         setMessage('Escola cadastrada com sucesso!');
       } else if (selectedTab === 'professor') {
-        if (await checkIfExists('professores', 'email', emailProfessor)) {
-          setMessage('Professor já cadastrado.');
+        // Criação de usuário com email e senha
+        const { user, error: authError } = await supabase.auth.signUp({
+          email: emailProfessor,
+          password: senhaProfessor,
+        });
+        
+        if (authError) {
+          setMessage(`Erro ao criar usuário: ${authError.message}`);
           return;
         }
-        const { error } = await supabase.from('professores').insert([{ nome: nomeProfessor, email: emailProfessor }]);
-        if (error) throw error;
-        setMessage('Professor cadastrado com sucesso!');
+        
+        if (!user) {
+          setMessage('Erro ao criar usuário. O usuário não foi retornado.');
+          return;
+        }
+        
+        setMessage('Usuário cadastrado com sucesso!');
       } else if (selectedTab === 'assuntos') {
         if (await checkIfExists('assuntos', 'nome', nomeAssunto)) {
           setMessage('Assunto já cadastrado.');
@@ -152,15 +162,15 @@ const Cadastro = () => {
         }
         const { error: insertError } = await supabase.from('assuntos').insert([{ nome: nomeAssunto, disciplina_id: disciplinaSelecionada }]);
         if (insertError) throw insertError;
-
+  
         // Chamar a função add_column_to_relatorio_1 ao salvar os dados
         const columnName = nomeAssunto.replace(/\s+/g, '_'); // Substituir espaços por underscore
         const { error: functionError } = await supabase.rpc('add_column_to_relatorio_1', { column_name: columnName });
         if (functionError) throw functionError;
-
+  
         setMessage('Assunto e coluna cadastrados com sucesso!');
       }
-
+  
       // Atualizar texto na tabela resumo_1
       if (selectedAssuntoId && selectedAlunoId) {
         const { error: updateError } = await supabase.from('resumo_1').upsert({
@@ -170,18 +180,20 @@ const Cadastro = () => {
         });
         if (updateError) throw updateError;
       }
-
+  
       clearFields();
     } catch (error) {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
   };
+  
+  
 
   const clearFields = () => {
     setNomeEscola('');
     setCodigoEscola('');
-    setNomeProfessor('');
     setEmailProfessor('');
+    setSenhaProfessor('');
     setNomeDisciplina('');
     setNomeAssunto('');
     setDisciplinaSelecionada('');
@@ -212,16 +224,16 @@ const Cadastro = () => {
         return (
           <div className="form-group">
             <input
-              type="text"
-              placeholder="Nome do Professor"
-              value={nomeProfessor}
-              onChange={(e) => setNomeProfessor(e.target.value)}
-            />
-            <input
               type="email"
               placeholder="Email do Professor"
               value={emailProfessor}
               onChange={(e) => setEmailProfessor(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Senha"
+              value={senhaProfessor}
+              onChange={(e) => setSenhaProfessor(e.target.value)}
             />
           </div>
         );
@@ -264,24 +276,21 @@ const Cadastro = () => {
   };
 
   return (
-    <div className={`container ${darkMode ? 'dark-mode' : ''}`}>
+
+    <div className={darkMode ? 'container dark' : 'container'}>
       <div className="tabs">
         <button onClick={() => setSelectedTab('escola')}>Escola</button>
         <button onClick={() => setSelectedTab('professor')}>Professor</button>
         <button onClick={() => setSelectedTab('disciplina')}>Disciplina</button>
         <button onClick={() => setSelectedTab('assuntos')}>Assuntos</button>
       </div>
-      <div className="content">
-        {renderTabContent()}
-        <button
-          onClick={handleSave}
-          disabled={isSaveDisabled}
-        >
-          Salvar
-        </button>
-      </div>
-      {message && <div className="message">{message}</div>}
+      {renderTabContent()}
+      <button onClick={handleSave} disabled={isSaveDisabled}>
+        Salvar
+      </button>
+      {message && <p>{message}</p>}
     </div>
+    
   );
 };
 
