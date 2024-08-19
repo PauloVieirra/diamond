@@ -68,6 +68,31 @@
     margin-left: 0px;
     margin-right: 16px;
 }
+/* style.css */
+
+/* Remove margens e espaçamentos das linhas de texto */
+.line, .contint p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ajusta o espaçamento entre as linhas dentro da tabela */
+.tabela p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove o espaçamento dentro da contint */
+.contint {
+  margin-left: 0;
+}
+
+/* Opcional: Ajuste o estilo das divs internas para garantir o layout correto */
+.contint div {
+  margin: 0;
+  padding: 0;
+}
+
 
 /* Adicione isso ao seu arquivo CSS */
 @media print {

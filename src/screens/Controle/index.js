@@ -16,50 +16,58 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         // Buscar quantidade de professores
-        const { count: professoresCount } = await supabase
+        const { count: professoresCount, error: professoresError } = await supabase
           .from('professores')
-          .select('*', { count: 'exact' });
+          .select('*', { count: 'exact', head: true });
         
+        if (professoresError) throw professoresError;
+
         // Buscar quantidade de alunos
-        const { count: alunosCount } = await supabase
+        const { count: alunosCount, error: alunosError } = await supabase
           .from('alunos')
-          .select('*', { count: 'exact' });
+          .select('*', { count: 'exact', head: true });
         
+        if (alunosError) throw alunosError;
+
         // Buscar quantidade de pagantes em dia
-        const { count: pagantesEmDiaCount } = await supabase
+        const { count: pagantesEmDiaCount, error: pagantesEmDiaError } = await supabase
           .from('pagamentos')
-          .select('*')
-          .eq('status', 'em dia')
-          .count();
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'em dia');
+
+        if (pagantesEmDiaError) throw pagantesEmDiaError;
 
         // Buscar quantidade de pagantes em atraso
-        const { count: pagantesEmAtrasoCount } = await supabase
+        const { count: pagantesEmAtrasoCount, error: pagantesEmAtrasoError } = await supabase
           .from('pagamentos')
-          .select('*')
-          .eq('status', 'atrasado')
-          .count();
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'atrasado');
+
+        if (pagantesEmAtrasoError) throw pagantesEmAtrasoError;
 
         // Buscar quantidade de contas ativas
-        const { count: contasAtivasCount } = await supabase
+        const { count: contasAtivasCount, error: contasAtivasError } = await supabase
           .from('contas')
-          .select('*')
-          .eq('status', 'ativa')
-          .count();
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'ativa');
+
+        if (contasAtivasError) throw contasAtivasError;
 
         // Buscar quantidade de contas inativas
-        const { count: contasInativasCount } = await supabase
+        const { count: contasInativasCount, error: contasInativasError } = await supabase
           .from('contas')
-          .select('*')
-          .eq('status', 'inativa')
-          .count();
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'inativa');
+
+        if (contasInativasError) throw contasInativasError;
 
         setStats({
-          professores: professoresCount,
-          alunos: alunosCount,
-          pagantesEmDia: pagantesEmDiaCount,
-          pagantesEmAtraso: pagantesEmAtrasoCount,
-          contasAtivas: contasAtivasCount,
-          contasInativas: contasInativasCount,
+          professores: professoresCount || 0,
+          alunos: alunosCount || 0,
+          pagantesEmDia: pagantesEmDiaCount || 0,
+          pagantesEmAtraso: pagantesEmAtrasoCount || 0,
+          contasAtivas: contasAtivasCount || 0,
+          contasInativas: contasInativasCount || 0,
         });
       } catch (error) {
         console.error('Erro ao buscar dados do dashboard:', error.message);
@@ -71,37 +79,35 @@ const Dashboard = () => {
 
   return (
     <div className="containerdash"> 
-    <div className="dashboard">
+      <div className="dashboard">
         <div className="row">
-         <h1>Dashboard</h1>   
+          <h1>Dashboard</h1>   
         </div>
-      
-
-      <div className="dashboard-card">
-        <h2>Professores</h2>
-        <p>{stats.professores}</p>
+        <div className="dashboard-card">
+          <h2>Professores</h2>
+          <p>{stats.professores}</p>
+        </div>
+        <div className="dashboard-card">
+          <h2>Alunos</h2>
+          <p>{stats.alunos}</p>
+        </div>
+        <div className="dashboard-card">
+          <h2>Pagantes em Dia</h2>
+          <p>{stats.pagantesEmDia}</p>
+        </div>
+        <div className="dashboard-card">
+          <h2>Pagantes em Atraso</h2>
+          <p>{stats.pagantesEmAtraso}</p>
+        </div>
+        <div className="dashboard-card">
+          <h2>Contas Ativas</h2>
+          <p>{stats.contasAtivas}</p>
+        </div>
+        <div className="dashboard-card">
+          <h2>Contas Inativas</h2>
+          <p>{stats.contasInativas}</p>
+        </div>
       </div>
-      <div className="dashboard-card">
-        <h2>Alunos</h2>
-        <p>{stats.alunos}</p>
-      </div>
-      <div className="dashboard-card">
-        <h2>Pagantes em Dia</h2>
-        <p>{stats.pagantesEmDia}</p>
-      </div>
-      <div className="dashboard-card">
-        <h2>Pagantes em Atraso</h2>
-        <p>{stats.pagantesEmAtraso}</p>
-      </div>
-      <div className="dashboard-card">
-        <h2>Contas Ativas</h2>
-        <p>{stats.contasAtivas}</p>
-      </div>
-      <div className="dashboard-card">
-        <h2>Contas Inativas</h2>
-        <p>{stats.contasInativas}</p>
-      </div>
-    </div>
     </div>
   );
 };

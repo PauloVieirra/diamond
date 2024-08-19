@@ -237,6 +237,7 @@ const Cadastro = () => {
             />
           </div>
         );
+
       case 'disciplina':
         return (
           <div className="form-group">
@@ -248,15 +249,10 @@ const Cadastro = () => {
             />
           </div>
         );
+
       case 'assuntos':
         return (
           <div className="form-group">
-            <input
-              type="text"
-              placeholder="Nome do Assunto"
-              value={nomeAssunto}
-              onChange={(e) => setNomeAssunto(e.target.value)}
-            />
             <select
               value={disciplinaSelecionada}
               onChange={(e) => setDisciplinaSelecionada(e.target.value)}
@@ -268,8 +264,16 @@ const Cadastro = () => {
                 </option>
               ))}
             </select>
+            <input
+              type="text"
+              placeholder="Nome do Assunto"
+              value={nomeAssunto}
+              onChange={(e) => setNomeAssunto(e.target.value)}
+            />
+            
           </div>
         );
+        
       default:
         return null;
     }

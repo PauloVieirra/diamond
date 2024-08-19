@@ -7,9 +7,9 @@ import './style.css';
 
 const PAGE_MARGIN = 50; // Margem da página
 const FONT_SIZE = 12; // Tamanho da fonte
-const FONT_TITLE = 16; // Tamanho da fonte
+const FONT_TITLE = 12; // Tamanho da fonte
 const LINE_HEIGHT = FONT_SIZE + 5; // Altura da linha
-const BLOCK_SPACING = LINE_HEIGHT * 4; // Espaço entre blocos de itens
+const BLOCK_SPACING = LINE_HEIGHT * 2; // Espaço entre blocos de itens
 
 const RavGerador = () => {
   const { id } = useParams();
@@ -93,8 +93,10 @@ const RavGerador = () => {
       size: fontSize,
       color,
       maxWidth: page.getWidth() - 2 * PAGE_MARGIN, // Limita a largura do texto
+      lineHeight: LINE_HEIGHT // Ajuste a altura da linha se necessário
     });
   };
+  
 
   const generatePdf = async () => {
     if (publi) {
@@ -102,71 +104,70 @@ const RavGerador = () => {
       let page = pdfDoc.addPage();
       let { width, height } = page.getSize();
       let currentY = height - PAGE_MARGIN;
-
+  
       const addNewPage = () => {
         page = pdfDoc.addPage();
         ({ width, height } = page.getSize());
         currentY = height - PAGE_MARGIN;
       };
-
-      // Função para verificar se é necessário adicionar uma nova página
+  
       const checkPageOverflow = (lineHeight) => {
         if (currentY - lineHeight < PAGE_MARGIN) {
           addNewPage();
         }
       };
-
+  
       // Adiciona conteúdo ao PDF
       addTextToPage(page, `REGISTRO DE AVALIAÇÃO - RAv`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
       currentY -= LINE_HEIGHT + 10;
-
+  
       addTextToPage(page, `Formulário 1: Descrição do Processo de Aprendizagem do Estudante`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
       currentY -= LINE_HEIGHT;
-
+  
       addTextToPage(page, `Ensino Fundamental (Anos Iniciais)`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
       currentY -= LINE_HEIGHT + 20;
-
+  
       if (publi) {
         addTextToPage(page, `Ano Letivo: ${publi.Data}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Coordenação Regional de Ensino: ${publi.CRE}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Unidade Escolar: ${publi.Instituicao}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Registro: ${publi.Diaregistro}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Nome do aluno(a): ${publi.name}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Data de Nascimento: ${publi.birthDate}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Série/Ano: ${publi.curso}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         addTextToPage(page, `Turno: ${publi.Turno}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         if (bimestreData) {
           addTextToPage(page, `Notas do Bimestre:`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
           currentY -= LINE_HEIGHT;
-
+  
           bimestreData.forEach((item, index) => {
             checkPageOverflow(LINE_HEIGHT);
             addTextToPage(page, `${item.disciplina}: ${item.nota}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
             currentY -= LINE_HEIGHT;
           });
         }
-
+  
         currentY -= BLOCK_SPACING;
-
+  
         addTextToPage(page, `Relatório:`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         if (relatorioData) {
           relatorioData.forEach((item, index) => {
             checkPageOverflow(LINE_HEIGHT);
@@ -174,41 +175,29 @@ const RavGerador = () => {
             currentY -= LINE_HEIGHT;
           });
         }
-
+  
         currentY -= BLOCK_SPACING;
-
+  
         addTextToPage(page, `Resumo:`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
         currentY -= LINE_HEIGHT;
-
+  
         if (resumoData) {
-          resumoData.forEach((item, index) => {
+          let resumoText = resumoData.map(item => {
             const disciplinaNome = disciplinas[item.disciplina_id] || 'Desconhecida';
             const assuntoNome = assuntos[item.assunto_id] || 'Desconhecido';
-
-            checkPageOverflow(BLOCK_SPACING); // Espaço suficiente para o bloco de resumo
-
-            addTextToPage(page, `Disciplina: ${disciplinaNome}`, PAGE_MARGIN, currentY, FONT_TITLE, rgb(0, 0, 0));
-            currentY -= LINE_HEIGHT;
-
-            addTextToPage(page, `Assunto: ${assuntoNome}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
-            currentY -= LINE_HEIGHT;
-
-            addTextToPage(page, `Avaliação: ${item.avaliacao || 'N/A'}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
-            currentY -= LINE_HEIGHT;
-
-            addTextToPage(page, `Rendimento: ${item.rendimento || 'N/A'}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
-            currentY -= LINE_HEIGHT;
-
-            addTextToPage(page, `Resumo: ${item.retorno || 'N/A'}`, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
-            currentY -= BLOCK_SPACING; // Espaço adicional após o bloco
-          });
+            return `Em ${disciplinaNome}, sobre ${assuntoNome}, ${item.avaliacao || 'N/A'}, ${item.retorno || 'N/A'}`;
+          }).join(' | ');
+  
+          addTextToPage(page, resumoText, PAGE_MARGIN, currentY, FONT_SIZE, rgb(0, 0, 0));
+          currentY -= LINE_HEIGHT * 2; // Espaço adicional após o bloco
         }
       }
-
+  
       const pdfBytes = await pdfDoc.save();
       saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `relatorio_${id}.pdf`);
     }
   };
+  
 
   return (
     <div className="contgerar">
@@ -224,7 +213,12 @@ const RavGerador = () => {
           Ensino Fundamental
           <br />(Anos Iniciais)
         </div>
+         <div className="cont">
+        <div className="contline2">A</div>
         <div className="tabela">
+          <div className="contline">
+            
+           
           <div className="line">
             Ano Letivo: {publi.Data}
           </div>
@@ -277,6 +271,8 @@ const RavGerador = () => {
             ) : (
               <div style={{marginLeft:'8px'}}>Não</div>
             )}
+            </div>
+            </div>
              </div>
           </div>
 
@@ -289,11 +285,12 @@ const RavGerador = () => {
         
         {resumoData && resumoData.map((item, index) => (
           <div key={index}>
-            <p>Disciplina: {item.titulo}</p>
-            <p>Assunto: {item.assunto}</p>
-            <p>Avaliação: {item.avaliacao}</p>
-            <p>Rendimento: {item.rendimento}</p>
-            <p>Resumo: {item.retorno}</p>
+            <p>
+             Em {item.titulo}
+              ,{item.assunto}
+               {item.avaliacao}
+               {item.retorno}
+            </p>
           </div>
         ))}
         </div>
