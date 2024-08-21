@@ -47,8 +47,7 @@ const PubliCards = ({ publi }) => {
           <Link to={"/Ravform/" + publi.id}>
             <div className="button-edit">Editar</div>
           </Link>
-          <Link to={{
-            pathname: "/RavGerador/" + publi.id }}>
+          <Link to={{ pathname: "/RavGerador/" + publi.id }}>
             <div className="button-gerar">Gerar Rav</div>
           </Link>
         </div>

@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  CircularProgress,
-} from "@mui/material";
 import "./styles.css"; // Importe o CSS customizado, se necessário
 
 const ModalComplit = () => {
   const { saveProfessorData, getListaEscolas, user } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     nome: "",
     email: user ? user.email : "", // Preenche o email com o email do usuário logado
@@ -79,80 +68,86 @@ const ModalComplit = () => {
   };
 
   return (
-    <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>Complete seu cadastro</DialogTitle>
-      <div>Dados obrigatórios</div>
-      <DialogContent>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Nome"
-            name="nome"
-            value={formData.nome}
-            onChange={(e) =>
-              setFormData((prevData) => ({
-                ...prevData,
-                nome: e.target.value,
-              }))
-            }
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData((prevData) => ({
-                ...prevData,
-                email: e.target.value,
-              }))
-            }
-            fullWidth
-            margin="normal"
-            required
-            disabled // Desativa o campo para garantir que o email do usuário não seja alterado
-          />
-          <Select
-            value={formData.escola}
-            onChange={(e) => handleSelectEscola({ nome: e.target.value })}
-            onClick={() => setOpen(true)}
-            displayEmpty
-            fullWidth
-            renderValue={(selected) => (selected ? selected : "Selecione a escola")}
-            margin="normal"
-            required
-            error={formData.escola === ""}
-            helperText={formData.escola === "" ? "Campo obrigatório" : ""}
-          >
-            {loading ? (
-              <MenuItem disabled>
-                <CircularProgress size={24} />
-              </MenuItem>
-            ) : (
-              filteredEscolas.map((escola) => (
-                <MenuItem key={escola.id} value={escola.nome}>
-                  {escola.nome}
-                </MenuItem>
-              ))
-            )}
-          </Select>
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(false)} color="primary">
-          Fechar
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          color="primary"
-          disabled={formData.escola === ""}
-        >
-          Salvar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    open && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <h2>Complete seu cadastro</h2>
+          <div className="mandatory-info">Dados obrigatórios</div>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="nome">Nome</label>
+              <input
+                id="nome"
+                type="text"
+                name="nome"
+                value={formData.nome}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    nome: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    email: e.target.value,
+                  }))
+                }
+                required
+                disabled // Desativa o campo para garantir que o email do usuário não seja alterado
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="escola">Escola</label>
+              <input
+                id="escola"
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                placeholder="Digite para buscar..."
+                required
+              />
+              <div className="dropdown">
+                {loading ? (
+                  <div className="loading">Carregando...</div>
+                ) : (
+                  filteredEscolas.map((escola) => (
+                    <div
+                      key={escola.id}
+                      className="dropdown-item"
+                      onClick={() => handleSelectEscola(escola)}
+                    >
+                      {escola.nome}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" onClick={() => setOpen(false)} className="btn-close">
+                Fechar
+              </button>
+              <button type="submit" className="btn-save" disabled={formData.escola === ""}>
+                Salvar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
   );
 };
 

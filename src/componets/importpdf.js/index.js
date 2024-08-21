@@ -117,47 +117,58 @@ const ImportAlunos = () => {
 
   const handleConfirm = async () => {
     try {
+      // Buscar alunos existentes no banco de dados
       const { data: existingAlunos, error: fetchError } = await supabase
-      .from('alunos')
-      .select('aluno_id, name, birthDate, anee, phone, idade, resposavel');
-  
+        .from('alunos')
+        .select('aluno_id'); // Inclua as colunas necessárias para a verificação
+      
       if (fetchError) {
         console.error('Erro ao buscar dados existentes:', fetchError);
         setStatusMessage('Erro ao buscar dados existentes. Verifique a conexão com o banco de dados.');
         return;
       }
-  
+      
+      // Filtrar alunos que ainda não estão no banco de dados
       const alunosToInsert = rows.filter(row =>
-       !existingAlunos.some(aluno =>
+        !existingAlunos.some(aluno =>
           aluno.aluno_id === row.aluno_id
         )
       );
-  
+      
       if (alunosToInsert.length === 0) {
         setStatusMessage('Nenhum novo aluno para inserir. Todos os alunos já existem no banco de dados.');
         return;
       }
-  
+      
+      // Inserir novos alunos
       const insertPromises = alunosToInsert.map(aluno => {
         const now = new Date();
         const dataRegistro = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+        
         return supabase
-        .from('alunos')
-        .insert({
-           aluno_id: aluno.aluno_id,
-           name: aluno.name,
-           birthDate: aluno.birthDate,
-           anee: aluno.anee,
-           phone: aluno.phone,
-           idade: aluno.idade,
-           resposavel: aluno.resposavel,
-           Data: dataRegistro,
-          ...headerData
-         });
+          .from('alunos')
+          .insert({
+            aluno_id: aluno.aluno_id,
+            name: aluno.name,
+            birthDate: aluno.birthDate,
+            anee: aluno.anee,
+            phone: aluno.phone,
+            idade: aluno.idade,
+            resposavel: aluno.resposavel,
+            Data: dataRegistro,
+            ...headerData,
+          })
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Erro ao inserir dados:', error.message);
+            } else {
+              console.log('Dados inseridos com sucesso:', data);
+            }
+          });
       });
-  
+      
       await Promise.all(insertPromises);
-  
+      
       console.log('Dados inseridos com sucesso!');
       setStatusMessage('Dados inseridos com sucesso!');
       setRows([]);
@@ -166,6 +177,8 @@ const ImportAlunos = () => {
       setStatusMessage('Erro ao enviar dados. Verifique a conexão com o banco de dados e tente novamente.');
     }
   };
+  
+  
 
   return (
     <div className="upBtnPdf">

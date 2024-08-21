@@ -21,13 +21,35 @@ const Cadastro = () => {
   const [escolas, setEscolas] = useState([]);
   const [professores, setProfessores] = useState([]);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+  const [selectedAssuntoId, setSelectedAssuntoId] = useState(null);
+  const [selectedAlunoId, setSelectedAlunoId] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
+  const [idSelecionado, setIdSelecionado] = useState(null);
+  const [novoNome, setNovoNome] = useState('');
+  const [editStates, setEditStates] = useState({});
 
-  // Variables for selected student and subject
-  const [selectedAlunoId, setSelectedAlunoId] = useState('');
-  const [selectedAssuntoId, setSelectedAssuntoId] = useState('');
+  const handleEditClick = (item) => {
+    setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: true }));
+  };
+
+  const handleTouch = () => {
+    setIsEdit((prevIsEdit) => !prevIsEdit);
+  };
 
   useEffect(() => {
-    // Verifica se todos os campos necessários estão preenchidos
+    const fetchData = async () => {
+      if (selectedTab === 'escola') await fetchEscolas();
+      if (selectedTab === 'professor') await fetchProfessores();
+      if (selectedTab === 'disciplina') await fetchDisciplinas();
+      if (selectedTab === 'assuntos') {
+        await fetchDisciplinas();
+        await fetchAssuntos();
+      }
+    };
+    fetchData();
+  }, [selectedTab]);
+
+  useEffect(() => {
     setIsSaveDisabled(
       !(selectedTab === 'escola' && nomeEscola && codigoEscola) &&
       !(selectedTab === 'professor' && emailProfessor && senhaProfessor) &&
@@ -37,15 +59,8 @@ const Cadastro = () => {
   }, [nomeEscola, codigoEscola, emailProfessor, senhaProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab]);
 
   useEffect(() => {
-    setMessage('');
-    if (selectedTab === 'escola') fetchEscolas();
-    if (selectedTab === 'professor') fetchProfessores();
-    if (selectedTab === 'disciplina') fetchDisciplinas();
-    if (selectedTab === 'assuntos') {
-      fetchDisciplinas();
-      fetchAssuntos();
-    }
-  }, [selectedTab]);
+    handleSearch(searchTerm);
+  }, [searchTerm, selectedTab]);
 
   const fetchEscolas = async () => {
     const { data, error } = await supabase.from('escola').select('id, nome, codigo');
@@ -87,6 +102,15 @@ const Cadastro = () => {
     }
   };
 
+  const checkIfExists = async (table, column, value) => {
+    const { data, error } = await supabase.from(table).select(`${column}`).eq(column, value);
+    if (error) {
+      setMessage(`Erro ao verificar se existe: ${error.message}`);
+      return false;
+    }
+    return data.length > 0;
+  };
+
   const handleSearch = (term) => {
     setSearchTerm(term);
     let results = [];
@@ -110,15 +134,6 @@ const Cadastro = () => {
     setSearchResults(results);
   };
 
-  const checkIfExists = async (table, field, value) => {
-    const { data, error } = await supabase.from(table).select('id').eq(field, value);
-    if (error) {
-      setMessage(`Erro ao verificar existência: ${error.message}`);
-      return false;
-    }
-    return data.length > 0;
-  };
-
   const handleSave = async () => {
     try {
       if (selectedTab === 'disciplina') {
@@ -138,7 +153,6 @@ const Cadastro = () => {
         if (error) throw error;
         setMessage('Escola cadastrada com sucesso!');
       } else if (selectedTab === 'professor') {
-        // Criação de usuário com email e senha
         const { user, error: authError } = await supabase.auth.signUp({
           email: emailProfessor,
           password: senhaProfessor,
@@ -148,9 +162,13 @@ const Cadastro = () => {
           setMessage(`Erro ao criar usuário: ${authError.message}`);
           return;
         }
+
+        
+
+        
         
         if (!user) {
-          setMessage('Erro ao criar usuário. O usuário não foi retornado.');
+          setMessage('Cadastro realizado.');
           return;
         }
         
@@ -163,15 +181,13 @@ const Cadastro = () => {
         const { error: insertError } = await supabase.from('assuntos').insert([{ nome: nomeAssunto, disciplina_id: disciplinaSelecionada }]);
         if (insertError) throw insertError;
   
-        // Chamar a função add_column_to_relatorio_1 ao salvar os dados
-        const columnName = nomeAssunto.replace(/\s+/g, '_'); // Substituir espaços por underscore
+        const columnName = nomeAssunto.replace(/\s+/g, '_');
         const { error: functionError } = await supabase.rpc('add_column_to_relatorio_1', { column_name: columnName });
         if (functionError) throw functionError;
   
         setMessage('Assunto e coluna cadastrados com sucesso!');
       }
   
-      // Atualizar texto na tabela resumo_1
       if (selectedAssuntoId && selectedAlunoId) {
         const { error: updateError } = await supabase.from('resumo_1').upsert({
           aluno_id: selectedAlunoId,
@@ -186,8 +202,42 @@ const Cadastro = () => {
       setMessage(`Erro ao realizar cadastro: ${error.message}`);
     }
   };
+
+  const handleSaveEdit = (item) => {
+    // atualizar o nome do item no banco de dados
+    setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
+  };
+
+  const handleClean = (item) => {
+    setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
+  };
+
+  const handleDeleteClick = async () => {
+    try {
+      if (idSelecionado === null) {
+        setMessage('Selecione um item para excluir!');
+        return;
+      }
   
-  
+      if (selectedTab === 'escola') {
+        const { error } = await supabase.from('escola').delete().eq('id', idSelecionado);
+        if (error) throw error;
+        setMessage('Escola excluída com sucesso!');
+      } else if (selectedTab === 'disciplina') {
+        const { error } = await supabase.from('disciplinas').delete().eq('id', idSelecionado);
+        if (error) throw error;
+        setMessage('Disciplina excluída com sucesso!');
+      } else if (selectedTab === 'assuntos') {
+        const { error } = await supabase.from('assuntos').delete().eq('id', idSelecionado);
+        if (error) throw error;
+        setMessage('Assunto excluído com sucesso!');
+      }
+      setIsEdit(false);
+      setIdSelecionado(null);
+    } catch (error) {
+      setMessage(`Erro ao excluir: ${error.message}`);
+    }
+  };
 
   const clearFields = () => {
     setNomeEscola('');
@@ -218,6 +268,7 @@ const Cadastro = () => {
               value={codigoEscola}
               onChange={(e) => setCodigoEscola(e.target.value)}
             />
+            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
       case 'professor':
@@ -231,13 +282,13 @@ const Cadastro = () => {
             />
             <input
               type="password"
-              placeholder="Senha"
+              placeholder="Senha do Professor"
               value={senhaProfessor}
               onChange={(e) => setSenhaProfessor(e.target.value)}
             />
+            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
-
       case 'disciplina':
         return (
           <div className="form-group">
@@ -247,54 +298,84 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
+            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
-
       case 'assuntos':
         return (
           <div className="form-group">
+           
             <select
               value={disciplinaSelecionada}
               onChange={(e) => setDisciplinaSelecionada(e.target.value)}
             >
-              <option value="">Selecione a Disciplina</option>
-              {disciplinas.map((disciplina) => (
+              <option value="">Selecione uma Disciplina</option>
+              {disciplinas.map(disciplina => (
                 <option key={disciplina.id} value={disciplina.id}>
                   {disciplina.nome}
                 </option>
               ))}
             </select>
-            <input
+             <input
               type="text"
               placeholder="Nome do Assunto"
               value={nomeAssunto}
               onChange={(e) => setNomeAssunto(e.target.value)}
             />
-            
+
+            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
-        
       default:
         return null;
     }
   };
 
   return (
-
-    <div className={darkMode ? 'container dark' : 'container'}>
+    <div className={darkMode ? 'dark-mode' : 'light-mode'}>
       <div className="tabs">
         <button onClick={() => setSelectedTab('escola')}>Escola</button>
         <button onClick={() => setSelectedTab('professor')}>Professor</button>
         <button onClick={() => setSelectedTab('disciplina')}>Disciplina</button>
         <button onClick={() => setSelectedTab('assuntos')}>Assuntos</button>
       </div>
+      <div className="search-container">
       {renderTabContent()}
-      <button onClick={handleSave} disabled={isSaveDisabled}>
-        Salvar
-      </button>
-      {message && <p>{message}</p>}
-    </div>
+        <input
+          type="text"
+          placeholder={`Pesquisar ${selectedTab}`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="search-results">
+      {searchResults.map((item) => (
+  <li className='card-item' key={item.id}>
+    {item.nome || item.email || item.codigo}
+    {editStates[item.id] ? (
+      <div className='lin'>
+        <input
+          type="text"
+          value={novoNome}
+          onChange={(e) => setNovoNome(e.target.value)}
+          placeholder="Novo nome"
+        />
+        
+        <button onClick={() => handleDeleteClick(item)}>Excluir</button>
+        <button onClick={() => handleClean(item)}>Cancelar</button>
+        <button onClick={() => handleSaveEdit(item)}>Salvar</button>
+      </div>
+    ) : (
+      <div className='btnedit' onClick={() => handleEditClick(item)}>
+        Editar
+      </div>
+    )}
+  </li>
+))}
+      </div>
     
+      {message && <div className="message">{message}</div>}
+    </div>
   );
 };
 

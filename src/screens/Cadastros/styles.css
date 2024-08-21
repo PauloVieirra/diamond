@@ -25,6 +25,35 @@
     margin-bottom: 16px;
    
   }
+  .search-results {
+    max-height: 300px; /* Defina a altura máxima conforme necessário */
+    overflow-y: auto; /* Adiciona a rolagem vertical */
+    border: 1px solid #ddd; /* Adiciona uma borda para destacar a área de resultados */
+    padding: 10px; /* Adiciona algum espaçamento interno */
+    background-color: #f9f9f9; /* Cor de fundo leve */
+    border-radius: 4px; /* Bordas arredondadas */
+  }
+  
+  .search-results ul {
+    list-style-type: none; /* Remove as bolinhas padrão da lista */
+    padding: 0; /* Remove o preenchimento da lista */
+    margin: 0; /* Remove a margem padrão */
+  }
+  
+  .search-results li {
+    padding: 8px; /* Adiciona espaçamento interno aos itens da lista */
+    border-bottom: 1px solid #ddd; /* Adiciona uma linha separadora entre itens */
+  }
+  
+  .search-results li:last-child {
+    border-bottom: none; /* Remove a linha do último item */
+  }
+  
+  .search-results p {
+    text-align: center; /* Centraliza o texto de nenhum resultado encontrado */
+    color: #999; /* Cor do texto */
+  }
+  
   
   .tabs button {
     padding: 10px 20px;
@@ -100,4 +129,48 @@
   .btnsalvar{
     width: 120px;
   }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .list-item span,
+  .list-item input {
+    margin-right: 10px;
+  }
+  
+  .list-item input {
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .list-item input.editable {
+    border: 1px solid #007bff;
+  }
+  .search-container{
+    width: 100%;
+  }
+  .search-container input{
+    width: 260px;
+  }
+  .list-container{
+
+  }
+  .card-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: auto;
+    height: 52px;
+  }
+
+  .lin{
+    display: flex;
+    flex-direction: row;
+  }
+  
   
