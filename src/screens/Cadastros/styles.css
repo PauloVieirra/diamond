@@ -48,6 +48,9 @@
   .search-results li:last-child {
     border-bottom: none; /* Remove a linha do último item */
   }
+  .search-results li:hover{
+    background-color: #a1a1a125;
+  }
   
   .search-results p {
     text-align: center; /* Centraliza o texto de nenhum resultado encontrado */
@@ -166,11 +169,40 @@
     justify-content: space-between;
     width: auto;
     height: 52px;
+    
   }
 
-  .lin{
+ 
+
+  .lin {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .lin {
+     
+  }
+  .btnedit{
+    width: 100px;
+  }
+  .inputcont{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+  }
+  .inputcont input {
+    height: 48px;
+    box-shadow: 0px 0px 2px #2e2e2e;
+  }
+  .contnewname{
+    width: 320px;
   }
   
   

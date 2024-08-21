@@ -354,21 +354,25 @@ const Cadastro = () => {
     {item.nome || item.email || item.codigo}
     {editStates[item.id] ? (
       <div className='lin'>
+        <div className='inputcont'>
         <input
           type="text"
           value={novoNome}
           onChange={(e) => setNovoNome(e.target.value)}
           placeholder="Novo nome"
+         style={{display:'flex',width:"80%", height:'42px'}}
         />
-        
-        <button onClick={() => handleDeleteClick(item)}>Excluir</button>
-        <button onClick={() => handleClean(item)}>Cancelar</button>
-        <button onClick={() => handleSaveEdit(item)}>Salvar</button>
+        </div>
+        <div> 
+        <button className='btnedit' style={{backgroundColor:"#FF6875"}} onClick={() => handleDeleteClick(item)}>Excluir</button>
+        <button className='btnedit' style={{backgroundColor:"#FFA502"}} onClick={() => handleClean(item)}>Cancelar</button>
+        <button className='btnedit' style={{backgroundColor:"#1ABC9C"}} onClick={() => handleSaveEdit(item)}>Salvar</button>
+        </div>
       </div>
     ) : (
-      <div className='btnedit' onClick={() => handleEditClick(item)}>
+     <button className='btnedit' onClick={() => handleEditClick(item)}>
         Editar
-      </div>
+      </button>
     )}
   </li>
 ))}
