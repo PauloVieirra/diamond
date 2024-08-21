@@ -203,14 +203,52 @@ const Cadastro = () => {
     }
   };
 
-  const handleSaveEdit = (item) => {
-    // atualizar o nome do item no banco de dados
-    setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
+  const updateNameInTable = async (table, id, newName) => {
+    const { error } = await supabase.from(table).update({ nome: newName }).eq('id', id);
+    if (error) {
+      setMessage(`Erro ao atualizar o nome: ${error.message}`);
+      return false;
+    }
+    return true;
   };
+  
+
+  const handleSaveEdit = async (item) => {
+    try {
+      let tableName;
+  
+      switch (selectedTab) {
+        case 'escola':
+          tableName = 'escola';
+          break;
+        case 'disciplina':
+          tableName = 'disciplinas';
+          break;
+        case 'assuntos':
+          tableName = 'assuntos';
+          break;
+        default:
+          throw new Error('Tab não reconhecida');
+      }
+  
+      const success = await updateNameInTable(tableName, item.id, novoNome);
+      if (success) {
+        setMessage('Nome atualizado com sucesso!');
+      }
+  
+      setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
+      clearFields(); // Limpa os campos após a atualização
+    } catch (error) {
+      setMessage(`Erro ao atualizar: ${error.message}`);
+    }
+  };
+  
 
   const handleClean = (item) => {
+    setNovoNome(''); // Limpa o campo de novo nome
     setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
   };
+  
 
   const handleDeleteClick = async () => {
     try {
