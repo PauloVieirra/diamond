@@ -27,6 +27,9 @@ const Cadastro = () => {
   const [idSelecionado, setIdSelecionado] = useState(null);
   const [novoNome, setNovoNome] = useState('');
   const [editStates, setEditStates] = useState({});
+  const [desempenho, setDesempenho] = useState('');
+  const [tituloDesempenho, setTituloDesempenho] = useState('');
+  const [textoDesempenho, setTextoDesempenho] = useState('');
 
   const handleEditClick = (item) => {
     setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: true }));
@@ -45,6 +48,7 @@ const Cadastro = () => {
         await fetchDisciplinas();
         await fetchAssuntos();
       }
+      if (selectedTab === 'desempenho') await fetchDesempenhos();
     };
     fetchData();
   }, [selectedTab]);
@@ -54,9 +58,10 @@ const Cadastro = () => {
       !(selectedTab === 'escola' && nomeEscola && codigoEscola) &&
       !(selectedTab === 'professor' && emailProfessor && senhaProfessor) &&
       !(selectedTab === 'disciplina' && nomeDisciplina) &&
-      !(selectedTab === 'assuntos' && nomeAssunto && disciplinaSelecionada)
+      !(selectedTab === 'assuntos' && nomeAssunto && disciplinaSelecionada) &&
+      !(selectedTab === 'desempenho' && desempenho)
     );
-  }, [nomeEscola, codigoEscola, emailProfessor, senhaProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab]);
+  }, [nomeEscola, codigoEscola, emailProfessor, senhaProfessor, nomeDisciplina, nomeAssunto, disciplinaSelecionada, selectedTab, desempenho]);
 
   useEffect(() => {
     handleSearch(searchTerm);
@@ -101,6 +106,17 @@ const Cadastro = () => {
       setSearchResults(data);
     }
   };
+
+  const fetchDesempenhos = async () => {
+    const { data, error } = await supabase.from(desempenho).select('id, text');
+    if (error) {
+      setMessage(`Erro ao buscar desempenhos: ${error.message}`);
+    } else {
+      setDesempenho(data);
+      setSearchResults(data);
+    }
+  };
+  
 
   const checkIfExists = async (table, column, value) => {
     const { data, error } = await supabase.from(table).select(`${column}`).eq(column, value);
@@ -157,21 +173,17 @@ const Cadastro = () => {
           email: emailProfessor,
           password: senhaProfessor,
         });
-        
+  
         if (authError) {
           setMessage(`Erro ao criar usuário: ${authError.message}`);
           return;
         }
-
-        
-
-        
-        
+  
         if (!user) {
           setMessage('Cadastro realizado.');
           return;
         }
-        
+  
         setMessage('Usuário cadastrado com sucesso!');
       } else if (selectedTab === 'assuntos') {
         if (await checkIfExists('assuntos', 'nome', nomeAssunto)) {
@@ -186,22 +198,26 @@ const Cadastro = () => {
         if (functionError) throw functionError;
   
         setMessage('Assunto e coluna cadastrados com sucesso!');
-      }
+      } else if (selectedTab === 'desempenho') {
+        const tableName = desempenho;
+        if (!tableName) {
+          setMessage('Tabela de desempenho não reconhecida.');
+          return;
+        }
   
-      if (selectedAssuntoId && selectedAlunoId) {
-        const { error: updateError } = await supabase.from('resumo_1').upsert({
-          aluno_id: selectedAlunoId,
-          assunto_id: selectedAssuntoId,
-          retorno: nomeAssunto
-        });
-        if (updateError) throw updateError;
-      }
+        // Assumindo que as tabelas de desempenho têm os campos 'title' e 'text'
+        const { error } = await supabase.from(tableName).insert([{ titulo: tituloDesempenho, text: textoDesempenho }]);
+        if (error) throw error;
   
-      clearFields();
+        setTextoDesempenho(''); // Limpa o campo após salvar
+        setTituloDesempenho(''); // Limpa o campo de título após salvar
+        setMessage('Título e texto cadastrados com sucesso!');
+      }
     } catch (error) {
-      setMessage(`Erro ao realizar cadastro: ${error.message}`);
+      setMessage(`Erro ao salvar: ${error.message}`);
     }
   };
+  
 
   const updateNameInTable = async (table, id, newName) => {
     const { error } = await supabase.from(table).update({ nome: newName }).eq('id', id);
@@ -248,34 +264,79 @@ const Cadastro = () => {
     setNovoNome(''); // Limpa o campo de novo nome
     setEditStates((prevEditStates) => ({ ...prevEditStates, [item.id]: false }));
   };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('custom-all-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'escola' }, () => {
+        fetchEscolas();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'professores' }, () => {
+        fetchProfessores();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'disciplinas' }, () => {
+        fetchDisciplinas();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assuntos' }, () => {
+        fetchAssuntos();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   
 
-  const handleDeleteClick = async () => {
+  const handleDeleteClick = async (item) => {
+    const confirmed = window.confirm(`Você realmente deseja excluir ${item.name}?`);
+    if (!confirmed) {
+      return; // Se o usuário cancelar, a exclusão não ocorre.
+    }
+  
     try {
-      if (idSelecionado === null) {
+      if (!item.id) {
         setMessage('Selecione um item para excluir!');
         return;
       }
   
+      let tableName, listSetter, list;
+  
+      // Determine a tabela e o setter de estado com base na aba selecionada
       if (selectedTab === 'escola') {
-        const { error } = await supabase.from('escola').delete().eq('id', idSelecionado);
-        if (error) throw error;
-        setMessage('Escola excluída com sucesso!');
+        tableName = 'escola';
+        listSetter = setEscolas;
+        list = escolas;
       } else if (selectedTab === 'disciplina') {
-        const { error } = await supabase.from('disciplinas').delete().eq('id', idSelecionado);
-        if (error) throw error;
-        setMessage('Disciplina excluída com sucesso!');
+        tableName = 'disciplinas';
+        listSetter = setDisciplinas;
+        list = disciplinas;
       } else if (selectedTab === 'assuntos') {
-        const { error } = await supabase.from('assuntos').delete().eq('id', idSelecionado);
-        if (error) throw error;
-        setMessage('Assunto excluído com sucesso!');
+        tableName = 'assuntos';
+        listSetter = setAssuntos;
+        list = assuntos;
       }
+  
+      const { error } = await supabase.from(tableName).delete().eq('id', item.id);
+      if (error) throw error;
+  
+      setMessage(`${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} excluído(a) com sucesso!`);
+  
+      // Atualiza a lista removendo o item excluído
+      const updatedList = list.filter((listItem) => listItem.id !== item.id);
+      listSetter(updatedList);
+  
+      // Resetando estado após exclusão
       setIsEdit(false);
       setIdSelecionado(null);
+  
     } catch (error) {
       setMessage(`Erro ao excluir: ${error.message}`);
     }
   };
+  
+  
+  
 
   const clearFields = () => {
     setNomeEscola('');
@@ -306,7 +367,7 @@ const Cadastro = () => {
               value={codigoEscola}
               onChange={(e) => setCodigoEscola(e.target.value)}
             />
-            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+             <button className='btnedit' onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
       case 'professor':
@@ -324,7 +385,7 @@ const Cadastro = () => {
               value={senhaProfessor}
               onChange={(e) => setSenhaProfessor(e.target.value)}
             />
-            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+             <button className='btnedit' onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
       case 'disciplina':
@@ -336,9 +397,73 @@ const Cadastro = () => {
               value={nomeDisciplina}
               onChange={(e) => setNomeDisciplina(e.target.value)}
             />
-            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+            <div className='lineTop'>
+            <button className='btnedit' onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+            </div>
+           
           </div>
         );
+        case 'desempenho':
+          return (
+            <div className="form-group">
+              <div style={{display:'flex'}}>
+                <div style={{display:'flex',width:'100px', justifyContent:'center', alignItems:'center', flexDirection:'column'}}>
+                  <input
+                    type="radio"
+                    name="desempenho"
+                    value="retornopositivo"
+                    checked={desempenho === 'retornopositivo'}
+                    onChange={(e) => setDesempenho(e.target.value)}
+                    style={{width:'20px'}}
+                  />
+                  <label>Bom</label>
+                </div>
+                <div style={{display:'flex',width:'100px', justifyContent:'center', alignItems:'center', flexDirection:'column'}}>
+                  <input
+                    type="radio"
+                    name="desempenho"
+                    value="retornomoderado"
+                    checked={desempenho === 'retornomoderado'}
+                    onChange={(e) => setDesempenho(e.target.value)}
+                    style={{width:'20px'}}
+                  />
+                  <label>Mediano</label>
+                </div>
+                <div style={{display:'flex',width:'100px', justifyContent:'center', alignItems:'center', flexDirection:'column'}}>
+                  <input
+                    type="radio"
+                    name="desempenho"
+                    value="retornonegativo"
+                    checked={desempenho === 'retornonegativo'}
+                    onChange={(e) => setDesempenho(e.target.value)}
+                    style={{width:'20px'}}
+                  />
+                  <label>Ruim</label>
+                </div>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Título"
+                  value={tituloDesempenho}
+                  onChange={(e) => setTituloDesempenho(e.target.value)}
+                />
+              </div>
+              <textarea
+                type="text"
+                placeholder="Escreva o texto aqui"
+                value={textoDesempenho}
+                onChange={(e) => setTextoDesempenho(e.target.value)}
+                style={{width:'420px', height:'200px'}}
+              />
+              <div className='lineTop'>
+                <button className='btnedit' onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+              </div>
+              <div>
+        
+      </div>
+            </div>
+          );
       case 'assuntos':
         return (
           <div className="form-group">
@@ -361,7 +486,7 @@ const Cadastro = () => {
               onChange={(e) => setNomeAssunto(e.target.value)}
             />
 
-            <button onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
+           <button className='btnedit' onClick={handleSave} disabled={isSaveDisabled}>Salvar</button>
           </div>
         );
       default:
@@ -376,7 +501,9 @@ const Cadastro = () => {
         <button onClick={() => setSelectedTab('professor')}>Professor</button>
         <button onClick={() => setSelectedTab('disciplina')}>Disciplina</button>
         <button onClick={() => setSelectedTab('assuntos')}>Assuntos</button>
+        <button onClick={() => setSelectedTab('desempenho')}>Desempenho</button>
       </div>
+
       <div className="search-container">
       {renderTabContent()}
         <input
@@ -387,7 +514,7 @@ const Cadastro = () => {
         />
       </div>
       <div className="search-results">
-      {searchResults.map((item) => (
+      {Array.isArray(searchResults) && searchResults.map((item) => (
   <li className='card-item' key={item.id}>
     {item.nome || item.email || item.codigo}
     {editStates[item.id] ? (
