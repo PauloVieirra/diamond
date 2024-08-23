@@ -36,12 +36,18 @@ const ImportAlunos = () => {
 
         if (textContent.items.length > 0) {
           // Extrair valores para as colunas ignoradas
+          const serieText = textContent.items[8].str.trim();
+          const cursoMatch = serieText.match(/(\d+º Ano)/);
+          const turmaMatch = serieText.match(/- (\w) -$/);
+
           const headerInfo = {
             Orgao: textContent.items[1].str.trim(),
             CRE: textContent.items[2].str.trim(),
             Instituicao: textContent.items[3].str.trim(),
             Diaregistro: textContent.items[4].str.trim(),
-            Serie: textContent.items[8].str.trim(),
+            Serie: serieText,
+            Curso: cursoMatch ? cursoMatch[1] : '',
+            Turma: turmaMatch ? turmaMatch[1] : '',
             Turno: textContent.items[10].str.trim().replace(/[^\p{L}\s]/gu, '')
           };
 
@@ -117,30 +123,27 @@ const ImportAlunos = () => {
 
   const handleConfirm = async () => {
     try {
-      // Buscar alunos existentes no banco de dados
       const { data: existingAlunos, error: fetchError } = await supabase
         .from('alunos')
-        .select('aluno_id'); // Inclua as colunas necessárias para a verificação
-      
+        .select('aluno_id');
+
       if (fetchError) {
         console.error('Erro ao buscar dados existentes:', fetchError);
         setStatusMessage('Erro ao buscar dados existentes. Verifique a conexão com o banco de dados.');
         return;
       }
-      
-      // Filtrar alunos que ainda não estão no banco de dados
+
       const alunosToInsert = rows.filter(row =>
         !existingAlunos.some(aluno =>
           aluno.aluno_id === row.aluno_id
         )
       );
-      
+
       if (alunosToInsert.length === 0) {
         setStatusMessage('Nenhum novo aluno para inserir. Todos os alunos já existem no banco de dados.');
         return;
       }
-      
-      // Inserir novos alunos
+
       const insertPromises = alunosToInsert.map(aluno => {
         const now = new Date();
         const dataRegistro = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
@@ -177,8 +180,6 @@ const ImportAlunos = () => {
       setStatusMessage('Erro ao enviar dados. Verifique a conexão com o banco de dados e tente novamente.');
     }
   };
-  
-  
 
   return (
     <div className="upBtnPdf">
@@ -204,6 +205,8 @@ const ImportAlunos = () => {
           <h3>{headerData.Diaregistro}</h3>
           <h3>{headerData.Data}</h3>
           <h3>{headerData.Serie}</h3>
+          <h3>{headerData.Curso}</h3>
+          <h3>{headerData.Turma}</h3>
           <h3>{headerData.Turno}</h3>
           <div className='contimportsbtns'>
             <button className='btnconfirm' onClick={handleConfirm}>Confirmar Envio</button>
@@ -229,11 +232,11 @@ const ImportAlunos = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
+                  {rows.map((row, index) => (
+                    <tr key={index}>
                       <td>{row.aluno_id}</td>
                       <td>{row.name}</td>
-                      <td>{row.birthDate} {row.idade}</td>
+                      <td>{row.birthDate}</td>
                       <td>{row.anee}</td>
                       <td>{row.phone}</td>
                       <td>{row.resposavel}</td>
@@ -245,7 +248,6 @@ const ImportAlunos = () => {
           )}
         </div>
       )}
-      {statusMessage && <p>{statusMessage}</p>}
     </div>
   );
 };

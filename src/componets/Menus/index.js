@@ -209,6 +209,7 @@ const MenuTopApp = () => {
                 <SlMenu />
               </div>
               <div className={styles.drawerContent}>
+              <div>  {user?.email ? <span>{user.email}</span> : ''}</div>
                 <div className={styles.contdrawer}>
                   <Link
                     to="/inicio"

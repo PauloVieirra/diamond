@@ -7,16 +7,58 @@ const ModalComplit = () => {
 
   const [formData, setFormData] = useState({
     nome: "",
-    email: user ? user.email : "", // Preenche o email com o email do usuário logado
+    email: user ? user.email : "",
     escola: "",
-    uid: user ? user.id : "" // Usa o ID do usuário se disponível
+    uid: user ? user.id : "",
+    Curso: "",  // Adiciona o campo Curso
+    Turma: ""   // Adiciona o campo Turma
   });
-
+  
   const [escolas, setEscolas] = useState([]);
   const [filteredEscolas, setFilteredEscolas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(true);
+
+  const cursoOptions = [
+    { value: '5° Ano', label: '5° Ano' },
+    { value: '6° Ano', label: '6° Ano' },
+    { value: '7° Ano', label: '7° Ano' },
+    { value: '8° Ano', label: '8° Ano' },
+    { value: '9° Ano', label: '9° Ano' },
+    { value: '1° Ano', label: '1° Ano' },
+    { value: '2° Ano', label: '2° Ano' },
+    { value: '3° Ano', label: '3° Ano' },
+  ];
+
+  const turmaOptions = [
+    { value: 'A', label: 'A' },
+    { value: 'B', label: 'B' },
+    { value: 'C', label: 'C' },
+    { value: 'D', label: 'D' },
+    { value: 'E', label: 'E' },
+    { value: 'F', label: 'F' },
+    { value: 'G', label: 'G' },
+    { value: 'H', label: 'H' },
+    { value: 'I', label: 'I' },
+    { value: 'J', label: 'J' },
+    { value: 'K', label: 'K' },
+    { value: 'L', label: 'L' },
+    { value: 'M', label: 'M' },
+    { value: 'N', label: 'N' },
+    { value: 'O', label: 'O' },
+    { value: 'P', label: 'P' },
+    { value: 'Q', label: 'Q' },
+    { value: 'R', label: 'R' },
+    { value: 'S', label: 'S' },
+    { value: 'T', label: 'T' },
+    { value: 'U', label: 'U' },
+    { value: 'V', label: 'V' },
+    { value: 'W', label: 'W' },
+    { value: 'X', label: 'X' },
+    { value: 'Y', label: 'Y' },
+    { value: 'Z', label: 'Z' },
+  ];
 
   useEffect(() => {
     const fetchEscolas = async () => {
@@ -38,10 +80,14 @@ const ModalComplit = () => {
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    const filtered = escolas.filter((escola) =>
-      escola.nome.toLowerCase().includes(term)
-    );
-    setFilteredEscolas(filtered);
+    if (term.length >= 5) {
+      const filtered = escolas.filter((escola) =>
+        escola.nome.toLowerCase().includes(term)
+      );
+      setFilteredEscolas(filtered);
+    } else {
+      setFilteredEscolas([]);
+    }
   };
 
   const handleSelectEscola = (escola) => {
@@ -50,22 +96,30 @@ const ModalComplit = () => {
       escola: escola.nome,
     }));
     setSearchTerm(escola.nome);
-    setOpen(false); // Fecha o modal após selecionar a escola
+    setFilteredEscolas([]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.escola === "" || formData.nome === "") {
-      return; // Não permite salvar se a escola não estiver selecionada
+    if (
+      formData.escola === "" ||
+      formData.nome === "" ||
+      formData.Curso === "" ||
+      formData.Turma === ""
+    ) {
+      return;
     }
     try {
       await saveProfessorData(formData);
       console.log("Dados do professor salvos com sucesso!");
-      setOpen(false); // Fecha o modal após salvar
+      setOpen(false);
     } catch (error) {
       console.error("Erro ao salvar os dados do professor:", error);
     }
   };
+  
+
+  const isFormValid = formData.escola !== "" && formData.nome !== "" && formData.Curso !== "" && formData.Turma !== "";
 
   return (
     open && (
@@ -105,7 +159,7 @@ const ModalComplit = () => {
                   }))
                 }
                 required
-                disabled // Desativa o campo para garantir que o email do usuário não seja alterado
+                disabled
               />
             </div>
 
@@ -119,30 +173,87 @@ const ModalComplit = () => {
                 placeholder="Digite para buscar..."
                 required
               />
-              <div className="dropdown">
-                {loading ? (
-                  <div className="loading">Carregando...</div>
-                ) : (
-                  filteredEscolas.map((escola) => (
-                    <div
-                      key={escola.id}
-                      className="dropdown-item"
-                      onClick={() => handleSelectEscola(escola)}
-                    >
-                      {escola.nome}
-                    </div>
-                  ))
-                )}
-              </div>
+              {searchTerm && filteredEscolas.length > 0 && (
+                <div className="dropdown">
+                  {loading ? (
+                    <div className="loading">Carregando...</div>
+                  ) : (
+                    filteredEscolas.map((escola) => (
+                      <div
+                        key={escola.id}
+                        className="dropdown-item"
+                        onClick={() => handleSelectEscola(escola)}
+                      >
+                        {escola.nome}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+             <div style={{display:'flex', flexDirection:'row'}}> 
+            <div className="form-group" >
+              <label htmlFor="curso">Curso</label>
+              <select
+                id="curso"
+                name="curso"
+                value={formData.Curso}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    Curso: e.target.value,
+                  }))
+                }
+                required
+              >
+                <option value="">Selecione um curso</option>
+                {cursoOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
+            <div className="form-group">
+              <label htmlFor="turma">Turma</label>
+              <select
+                id="turma"
+                name="turma"
+                value={formData.Turma}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    Turma: e.target.value,
+                  }))
+                }
+                required
+              >
+                <option value="">Selecione uma turma</option>
+                {turmaOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
             <div className="modal-actions">
               <button type="button" onClick={() => setOpen(false)} className="btn-close">
                 Fechar
               </button>
-              <button type="submit" className="btn-save" disabled={formData.escola === ""}>
+              <button
+                type="submit"
+                className="btn-save"
+                disabled={
+                  formData.escola === "" ||
+                  formData.nome === "" ||
+                  formData.Curso === "" ||  // Verifica se o curso foi selecionado
+                  formData.Turma === ""     // Verifica se a turma foi selecionada
+                }>
                 Salvar
               </button>
+
             </div>
           </form>
         </div>

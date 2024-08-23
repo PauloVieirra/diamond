@@ -6,22 +6,116 @@ import ImportAlunos from "../importpdf.js";
 import { useAuth } from "../../context/AuthContext";
 
 const ListClass = () => {
-  const { user, complit,professor } = useAuth();
+  const { user, complit } = useAuth();
   const [fetchError, setFetchError] = useState(null);
   const [publis, setPublis] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedSeries, setSelectedSeries] = useState('');
   const [selectedEscola, setSelectedEscola] = useState('');
-  const [selectedTurno, setSelectedTurno] = useState('');
+  const [selectedCurso, setSelectedCurso] = useState('');
+  const [selectedTurma, setSelectedTurma] = useState('');
   const [escolasOptions, setEscolasOptions] = useState([]);
-  
+  const [cursosOptions, setCursosOptions] = useState([]);
+  const [turmasOptions, setTurmasOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchProfessorData = async () => {
+      if (user && user.email) {
+        // Buscar dados do professor
+        const { data: professorData, error: professorError } = await supabase
+          .from('professores')
+          .select('escola, Curso, Turma')
+          .eq('email', user.email)
+          .single();
+
+        if (professorError) {
+          console.error('Erro ao buscar dados do professor:', professorError.message);
+          return;
+        }
+
+        if (professorData) {
+          setSelectedEscola(professorData.escola);
+          setSelectedCurso(professorData.Curso);
+          setSelectedTurma(professorData.Turma);
+
+          // Buscar opções de escola
+          const { data: escolas, error: escolasError } = await supabase
+            .from('professores')
+            .select('escola')
+            .eq('escola', professorData.escola);
+
+          if (escolasError) {
+            console.error('Erro ao buscar opções de escola:', escolasError.message);
+            return;
+          }
+
+          if (escolas) {
+            const uniqueEscolas = Array.from(new Set(escolas.map(escola => escola.escola)))
+              .map(escola => ({ value: escola, label: escola }));
+            
+            setEscolasOptions(uniqueEscolas);
+          }
+
+          // Buscar opções de curso
+          const { data: cursos, error: cursosError } = await supabase
+            .from('alunos')
+            .select('Curso')
+            .eq('Instituicao', professorData.escola);
+
+          if (cursosError) {
+            console.error('Erro ao buscar opções de curso:', cursosError.message);
+            return;
+          }
+
+          if (cursos) {
+            const uniqueCursos = Array.from(new Set(cursos.map(curso => curso.Curso)))
+              .map(curso => ({ value: curso, label: curso }));
+            
+            setCursosOptions(uniqueCursos);
+          }
+
+          // Buscar opções de turma
+          const { data: turmas, error: turmasError } = await supabase
+            .from('alunos')
+            .select('Turma')
+            .eq('Instituicao', professorData.escola);
+
+          if (turmasError) {
+            console.error('Erro ao buscar opções de turma:', turmasError.message);
+            return;
+          }
+
+          if (turmas) {
+            const uniqueTurmas = Array.from(new Set(turmas.map(turma => turma.Turma)))
+              .map(turma => ({ value: turma, label: turma }));
+            
+            setTurmasOptions(uniqueTurmas);
+          }
+        }
+      }
+    };
+
+    fetchProfessorData();
+  }, [user]);
 
   useEffect(() => {
     const fetchPubli = async () => {
-      const { data, error } = await supabase
-        .from('alunos')
-        .select();
+      let query = supabase.from('alunos').select();
+
+      // Adicionar filtros baseados no professor logado
+      if (selectedEscola) {
+        query = query.eq('Instituicao', selectedEscola);
+      }
+
+      if (selectedCurso) {
+        query = query.eq('Curso', selectedCurso);
+      }
+
+      if (selectedTurma) {
+        query = query.eq('Turma', selectedTurma);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         setFetchError('Sem nada para mostrar');
@@ -50,48 +144,7 @@ const ListClass = () => {
     return () => {
       channel.unsubscribe();
     };
-  }, []);
-
-  useEffect(() => {
-    const fetchProfessorData = async () => {
-      if (user && user.email) {
-
-        const { data: professorData, error: professorError } = await supabase
-          .from('professores')
-          .select('escola')
-          .eq('email', user.email)
-          .single();
-
-        if (professorError) {
-          console.error('Erro ao buscar dados do professor:', professorError.message);
-          return;
-        }
-
-        if (professorData) {
-          setSelectedEscola(professorData.escola);
-
-          const { data: escolas, error: escolasError } = await supabase
-            .from('professores')
-            .select('escola')
-            .eq('escola', professorData.escola);
-
-          if (escolasError) {
-            console.error('Erro ao buscar opções de escola:', escolasError.message);
-            return;
-          }
-
-          if (escolas) {
-            const uniqueEscolas = Array.from(new Set(escolas.map(escola => escola.escola)))
-              .map(escola => ({ value: escola, label: escola }));
-            
-            setEscolasOptions(uniqueEscolas);
-          }
-        }
-      }
-    };
-
-    fetchProfessorData();
-  }, [user]);
+  }, [selectedEscola, selectedCurso, selectedTurma]);
 
   useEffect(() => {
     if (!selectedEscola) {
@@ -105,8 +158,12 @@ const ListClass = () => {
       filteredResults = filteredResults.filter(publi => publi.Instituicao === selectedEscola);
     }
 
-    if (selectedTurno) {
-      filteredResults = filteredResults.filter(publi => publi.Turno === selectedTurno);
+    if (selectedCurso) {
+      filteredResults = filteredResults.filter(publi => publi.Curso === selectedCurso);
+    }
+
+    if (selectedTurma) {
+      filteredResults = filteredResults.filter(publi => publi.Turma === selectedTurma);
     }
 
     if (searchTerm) {
@@ -116,29 +173,8 @@ const ListClass = () => {
       ));
     }
 
-    if (selectedSeries) {
-      filteredResults = filteredResults.filter(publi => publi.serie === selectedSeries);
-    }
-
     setSearchResults(filteredResults);
-  }, [searchTerm, selectedSeries, selectedEscola, selectedTurno, publis]);
-
-  const seriesOptions = [
-    { value: '5', label: '5° Fundamental' },
-    { value: '6', label: '6° Fundamental' },
-    { value: '7', label: '7° Fundamental' },
-    { value: '8', label: '8° Fundamental' },
-    { value: '9', label: '9° Fundamental' },
-    { value: '1', label: '1° Médio' },
-    { value: '2', label: '2° Médio' },
-    { value: '3', label: '3° Médio' },
-  ];
-
-  const turnoOptions = [
-    { value: 'manha', label: 'Matutino' },
-    { value: 'vespertino', label: 'Vespertino' },
-    { value: 'noite', label: 'Noturno' },
-  ];
+  }, [searchTerm, selectedEscola, selectedCurso, selectedTurma, publis]);
 
   if (!complit) {
     return <div>Nada para mostrar</div>;
@@ -147,60 +183,59 @@ const ListClass = () => {
   return (
     <div className={styles.pagehome}>
       <div className="containertopbar">
-      <div className={styles.container}>
-        <div className="wellcomemobi"></div>
-        <div className={styles.selects}>
-          <select 
-            value={selectedEscola}
-            onChange={e => setSelectedEscola(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Escola</option>
-            {escolasOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.selects}>
-          <select 
-            value={selectedTurno}
-            onChange={e => setSelectedTurno(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Turno</option>
-            {turnoOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.selects}>
-          <select
-            value={selectedSeries}
-            onChange={(e) => setSelectedSeries(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Série</option>
-            {seriesOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
+        <div className={styles.container}>
+          <div className="wellcomemobi"></div>
+          <div className={styles.selects}>
+            <select 
+              value={selectedEscola}
+              onChange={e => setSelectedEscola(e.target.value)}
+              className={styles.select}
+            >
+              <option value="">Escola</option>
+              {escolasOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.selects}>
+            <select
+              value={selectedCurso}
+              onChange={(e) => setSelectedCurso(e.target.value)}
+              className={styles.select}
+            >
+              <option value="">Curso</option>
+              {cursosOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.selects}>
+            <select
+              value={selectedTurma}
+              onChange={(e) => setSelectedTurma(e.target.value)}
+              className={styles.select}
+            >
+              <option value="">Turma</option>
+              {turmasOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className={styles.contSearch}>
-        <input
-          type="text"
-          placeholder="Pesquisar por nome ou série..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.selectsearch}
-        />
-      </div>
+          <div className={styles.contSearch}>
+            <input
+              type="text"
+              placeholder="Pesquisar por nome ou série..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={styles.selectsearch}
+            />
+          </div>
 
-        <div className={styles.selectspdf}>
-          <ImportAlunos />
+          <div className={styles.selectspdf}>
+            <ImportAlunos />
+          </div>
         </div>
-      </div>
-     
       </div>
       {fetchError && (<p>{fetchError}</p>)}
       {selectedEscola && searchResults && searchResults.length > 0 ? (

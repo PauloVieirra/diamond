@@ -32,8 +32,11 @@
 }
 
 .form-group {
-  
   margin-bottom: 16px;
+}
+.form-groupserie{
+  display: flex;
+  flex-direction: row;
 }
 
 .form-group label {
@@ -50,15 +53,14 @@
 }
 
 .dropdown {
-  position: absolute;
-  background: #fff;
+  background: #f7f7f7;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: calc(100% - 2px);
+  width: auto;
   max-height: 150px;
   overflow-y: auto;
-  z-index: 1000;
 }
+
 
 .dropdown-item {
   padding: 8px;
@@ -66,7 +68,7 @@
 }
 
 .dropdown-item:hover {
-  background: #f0f0f0;
+  background: #c8bcff;
 }
 
 .loading {
