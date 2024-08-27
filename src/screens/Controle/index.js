@@ -135,7 +135,7 @@ const Dashboard = () => {
           <p>{stats.escolas}</p>
           <h2>Escolas</h2>
         </div>
-        <div className="dashboard-card" onClick={goToAlunos}>
+        <div className="dashboard-card">
           <p>{stats.alunos}</p>
           <h2>Alunos</h2>
         </div>
