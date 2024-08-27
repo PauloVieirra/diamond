@@ -19,112 +19,118 @@ const ListClass = () => {
   const [turmasOptions, setTurmasOptions] = useState([]);
 
   useEffect(() => {
-    const fetchProfessorData = async () => {
-      if (user && user.email) {
-        // Buscar dados do professor
-        const { data: professorData, error: professorError } = await supabase
-          .from('professores')
-          .select('escola, Curso, Turma')
-          .eq('email', user.email)
-          .single();
-
-        if (professorError) {
-          console.error('Erro ao buscar dados do professor:', professorError.message);
-          return;
-        }
-
-        if (professorData) {
-          setSelectedEscola(professorData.escola);
-          setSelectedCurso(professorData.Curso);
-          setSelectedTurma(professorData.Turma);
-
-          // Buscar opções de escola
-          const { data: escolas, error: escolasError } = await supabase
+    if (complit) {
+      const fetchProfessorData = async () => {
+        if (user && user.email) {
+          const { data: professorData, error: professorError } = await supabase
             .from('professores')
-            .select('escola')
-            .eq('escola', professorData.escola);
+            .select('escola, Curso, Turma')
+            .eq('email', user.email)
+            .single();
 
-          if (escolasError) {
-            console.error('Erro ao buscar opções de escola:', escolasError.message);
+          if (professorError) {
+            console.error('Erro ao buscar dados do professor:', professorError.message);
             return;
           }
 
-          if (escolas) {
-            const uniqueEscolas = Array.from(new Set(escolas.map(escola => escola.escola)))
-              .map(escola => ({ value: escola, label: escola }));
-            
-            setEscolasOptions(uniqueEscolas);
-          }
+          if (professorData) {
+            setSelectedEscola(professorData.escola);
+            setSelectedCurso(professorData.Curso); 
+            setSelectedTurma(professorData.Turma);
 
-          // Buscar opções de curso
-          const { data: cursos, error: cursosError } = await supabase
-            .from('alunos')
-            .select('Curso')
-            .eq('Instituicao', professorData.escola);
+            // Atualizar opções de escola
+            const { data: escolas, error: escolasError } = await supabase
+              .from('alunos')
+              .select('Instituicao')
+              .eq('Instituicao', professorData.escola);
 
-          if (cursosError) {
-            console.error('Erro ao buscar opções de curso:', cursosError.message);
-            return;
-          }
+            if (escolasError) {
+              console.error('Erro ao buscar opções de escola:', escolasError.message);
+              return;
+            }
 
-          if (cursos) {
-            const uniqueCursos = Array.from(new Set(cursos.map(curso => curso.Curso)))
-              .map(curso => ({ value: curso, label: curso }));
-            
-            setCursosOptions(uniqueCursos);
-          }
+            if (escolas) {
+              const uniqueEscolas = Array.from(new Set(escolas.map(escola => escola.Instituicao)))
+                .map(escola => ({ value: escola, label: escola }));
+              
+              setEscolasOptions(uniqueEscolas);
+            }
 
-          // Buscar opções de turma
-          const { data: turmas, error: turmasError } = await supabase
-            .from('alunos')
-            .select('Turma')
-            .eq('Instituicao', professorData.escola);
+            // Atualizar opções de curso e turma
+            const { data: cursos, error: cursosError } = await supabase
+              .from('alunos')
+              .select('Curso')
+              .eq('Instituicao', professorData.escola);
 
-          if (turmasError) {
-            console.error('Erro ao buscar opções de turma:', turmasError.message);
-            return;
-          }
+            if (cursosError) {
+              console.error('Erro ao buscar opções de curso:', cursosError.message);
+              return;
+            }
 
-          if (turmas) {
-            const uniqueTurmas = Array.from(new Set(turmas.map(turma => turma.Turma)))
-              .map(turma => ({ value: turma, label: turma }));
-            
-            setTurmasOptions(uniqueTurmas);
+            if (cursos) {
+              const uniqueCursos = Array.from(new Set(cursos.map(curso => curso.Curso)))
+                .map(curso => ({ value: curso, label: curso }));
+              
+              setCursosOptions(uniqueCursos);
+
+              // Definir o curso selecionado se estiver presente na lista
+              if (professorData.Curso && uniqueCursos.some(curso => curso.value === professorData.Curso)) {
+                setSelectedCurso(professorData.Curso);
+              }
+            }
+
+            const { data: turmas, error: turmasError } = await supabase
+              .from('alunos')
+              .select('Turma')
+              .eq('Instituicao', professorData.escola);
+
+            if (turmasError) {
+              console.error('Erro ao buscar opções de turma:', turmasError.message);
+              return;
+            }
+
+            if (turmas) {
+              const uniqueTurmas = Array.from(new Set(turmas.map(turma => turma.Turma)))
+                .map(turma => ({ value: turma, label: turma }));
+              
+              setTurmasOptions(uniqueTurmas);
+            }
           }
         }
-      }
-    };
+      };
 
-    fetchProfessorData();
-  }, [user]);
+      fetchProfessorData();
+    }
+  }, [complit, user]);
 
   useEffect(() => {
     const fetchPubli = async () => {
-      let query = supabase.from('alunos').select();
+      if (selectedEscola && selectedCurso && selectedTurma) {
+        let query = supabase.from('alunos').select();
 
-      // Adicionar filtros baseados no professor logado
-      if (selectedEscola) {
-        query = query.eq('Instituicao', selectedEscola);
-      }
+        if (selectedEscola) {
+          query = query.eq('Instituicao', selectedEscola);
+        }
 
-      if (selectedCurso) {
-        query = query.eq('Curso', selectedCurso);
-      }
+        if (selectedCurso) {
+          query = query.eq('Curso', selectedCurso);
+        }
 
-      if (selectedTurma) {
-        query = query.eq('Turma', selectedTurma);
-      }
+        if (selectedTurma) {
+          query = query.eq('Turma', selectedTurma);
+        }
 
-      const { data, error } = await query;
+        const { data, error } = await query;
 
-      if (error) {
-        setFetchError('Sem nada para mostrar');
-        setPublis([]);
-        console.log(error);
-      } else {
-        setPublis(data || []);
-        setSearchResults(data || []);
-        setFetchError(null);
+        if (error) {
+          setFetchError('Sem nada para mostrar');
+          setPublis([]);
+          console.log(error);
+        } else {
+          setPublis(data || []);
+          setSearchResults(data || []);
+          setFetchError(null);
+        }
       }
     };
 
@@ -199,7 +205,7 @@ const ListClass = () => {
           </div>
           <div className={styles.selects}>
             <select
-              value={selectedCurso}
+              value={selectedCurso || ''} // Defina o valor ou vazio
               onChange={(e) => setSelectedCurso(e.target.value)}
               className={styles.select}
             >

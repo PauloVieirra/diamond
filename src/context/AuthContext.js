@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }) => {
   const [userType, setUserType] = useState('Tipo de usuário não disponível');
   const [nome, setNome] = useState(null);
 
+  console.log(complit+'complit');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -210,7 +212,7 @@ const signUp = async (email, password) => {
       if (data && data.length > 0) {
         const updatedProfessor = data[0];
         setProfessor(updatedProfessor);
-        setComplit(true);
+        
 
         setUser((prevUser) => ({
           ...prevUser,
@@ -224,6 +226,7 @@ const signUp = async (email, password) => {
       }
 
       console.log('Dados do professor salvos com sucesso!');
+      setComplit(true);
     } catch (error) {
       console.error('Erro ao salvar os dados do professor:', error.message);
       throw error;

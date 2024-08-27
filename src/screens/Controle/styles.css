@@ -3,27 +3,28 @@
     width: 100%;
     height: calc(100vh - 60px);
     flex-direction: column; /* Opcional: Define a direção do layout como coluna se necessário */
+    background-color: #ececec;
 }
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    background-color: #f4f4f4;
-    flex: 1; /* Faz com que a dashboard ocupe o espaço restante da div mãe */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2px;
+    padding: 10px;
     overflow-y: auto; /* Adiciona rolagem vertical se necessário */
+    
 }
 
 .dashboard-card {
     display: flex;
+    width: 200px;
+    height: 200px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff;
     border-radius: 8px;
+    margin: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
     text-align: center;
 }
 
@@ -37,4 +38,9 @@
     margin: 0;
     font-size: 2em;
     color: #555;
+}
+.row-dash{
+    display: flex;
+    flex-direction: row;
+    width: 98%;
 }

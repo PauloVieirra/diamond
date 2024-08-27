@@ -184,19 +184,39 @@ select{
 
 .btn_secondary{
   width: 100%;
-  max-width: 270px;
+  max-width: 100px;
   height: 42px;
-  background-color: #9191911e;
+  background-color: #b6b6b6a9;
   border-color: rgba(83, 83, 83, 0.774);
   font-size: 16px;
+  color: #414142;
 }
+.btn_secondary:hover{
+  background-color: #d3d3d3a9;
+}
+
 .btn_terciary{
   width: 100%;
-  max-width: 270px;
+  max-width: 100px;
   height: 42px;
   background-color: #f7f7f700;
   border-color: rgba(16, 140, 248, 0);
   font-size: 16px;
+}
+
+.btnDell{
+  width: 100%;
+  max-width: 100px;
+  height: 42px;
+  background-color: #f15b5ba9;
+  border-color: rgba(83, 83, 83, 0.774);
+  font-size: 16px;
+  color: #414142;
+}
+
+.btnDell:hover{
+  color: #f1f1f1;
+  background-color: #810d0da9;
 }
 
 .space{

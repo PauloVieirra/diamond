@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import "./styles.css"; // Importe o CSS customizado, se necessário
 
 const ModalComplit = () => {
-  const { saveProfessorData, getListaEscolas, user } = useAuth();
+  const { saveProfessorData, getListaEscolas, user, complit, setComplit } = useAuth(); // Adiciona setComplit ao contexto
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -112,12 +112,12 @@ const ModalComplit = () => {
     try {
       await saveProfessorData(formData);
       console.log("Dados do professor salvos com sucesso!");
+     
       setOpen(false);
     } catch (error) {
       console.error("Erro ao salvar os dados do professor:", error);
     }
   };
-  
 
   const isFormValid = formData.escola !== "" && formData.nome !== "" && formData.Curso !== "" && formData.Turma !== "";
 
@@ -245,15 +245,9 @@ const ModalComplit = () => {
               <button
                 type="submit"
                 className="btn-save"
-                disabled={
-                  formData.escola === "" ||
-                  formData.nome === "" ||
-                  formData.Curso === "" ||  // Verifica se o curso foi selecionado
-                  formData.Turma === ""     // Verifica se a turma foi selecionada
-                }>
+                disabled={!isFormValid}>
                 Salvar
               </button>
-
             </div>
           </form>
         </div>

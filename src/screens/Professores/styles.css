@@ -1,0 +1,234 @@
+.professor-page{
+  display: flex;
+  flex-direction: column;
+}
+.lineprof{
+  display: flex;
+  width: 100%;
+  height: 80px;
+  align-items: center;
+  background-color: #d0d1fd;
+}
+
+.conttoppro{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #d0d1fd;
+  }
+  
+  .conttopo{
+    
+    flex-direction: row;
+    margin: 0px;
+    width: auto;
+    height: 50px;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+  }
+  .inp{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    gap: 42px;
+  }
+ .btninp{
+  display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    justify-content: flex-end;
+ }
+  
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 16px;
+   
+  }
+  .search-results {
+    max-height: 300px; /* Defina a altura máxima conforme necessário */
+    overflow-y: auto; /* Adiciona a rolagem vertical */
+    border: 1px solid #ddd; /* Adiciona uma borda para destacar a área de resultados */
+    padding: 10px; /* Adiciona algum espaçamento interno */
+    background-color: #f9f9f9; /* Cor de fundo leve */
+    border-radius: 4px; /* Bordas arredondadas */
+  }
+  
+  .search-results ul {
+    list-style-type: none; /* Remove as bolinhas padrão da lista */
+    padding: 0; /* Remove o preenchimento da lista */
+    margin: 0; /* Remove a margem padrão */
+  }
+  
+  .search-results li {
+    padding: 8px; /* Adiciona espaçamento interno aos itens da lista */
+    border-bottom: 1px solid #ddd; /* Adiciona uma linha separadora entre itens */
+  }
+  
+  .search-results li:last-child {
+    border-bottom: none; /* Remove a linha do último item */
+  }
+  .search-results li:hover{
+    background-color: #a1a1a125;
+  }
+  
+  .search-results p {
+    text-align: center; /* Centraliza o texto de nenhum resultado encontrado */
+    color: #999; /* Cor do texto */
+  }
+  
+  
+  .tabs button {
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    flex-grow: 1;
+    text-align: center;
+    color: #2e2e2e;
+  }
+
+  .tabs button:hover {
+    padding: 10px 20px;
+    background-color: #c7cfff;
+    border: none;
+    cursor: pointer;
+    flex-grow: 1;
+    text-align: center;
+    color: #2e2e2e;
+  }
+  
+  .tabs button.active {
+    background-color: #6a6ce0;
+    color: white;
+  }
+  
+  .tab-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    height: 100%;
+    justify-content: flex-start;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-style: inset;
+    border-width: 0px;
+    border-color: #007bff;
+  }
+  
+  .form-group {
+    display: flex;
+    width: 100%;
+    height: auto;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-group input{
+    width: 100%;
+    padding: 0;
+  }
+
+  .conttbnsalvar{
+    display: flex;
+    margin: 0px;
+    width: auto;
+    height: 42px;
+    padding-left: 20px;
+  }
+  
+  .save-button {
+    padding: 10px 20px;
+    background-color: #335491;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    border-radius: 8px;
+  }
+  
+  .message {
+    margin-top: 10px;
+    color: green;
+  }
+
+  .btnsalvar{
+    width: 120px;
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .list-item span,
+  .list-item input {
+    margin-right: 10px;
+  }
+  
+  .list-item input {
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .list-item input.editable {
+    border: 1px solid #007bff;
+  }
+  .search-container{
+    width: 100%;
+  }
+  .search-container input{
+    width: 260px;
+  }
+  .list-container{
+
+  }
+  .card-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: auto;
+    height: 52px;
+    
+  }
+
+ 
+
+  .lin {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .lin {
+     
+  }
+  .btnedit{
+    width: 100px;
+  }
+  .inputcont{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+  }
+  .inputcont input {
+    height: 48px;
+    box-shadow: 0px 0px 2px #2e2e2e;
+  }
+  .contnewname{
+    width: 320px;
+  }
+ 
+  
