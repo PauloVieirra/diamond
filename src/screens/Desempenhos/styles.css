@@ -1,5 +1,9 @@
 
-
+.desempenho-page{
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+}
 .container {
     display: flex;
     flex-direction: column;
@@ -204,5 +208,65 @@
   .contnewname{
     width: 320px;
   }
-  
+  .contdesempenho{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+  }
+  .contdesempenho input{
+    width: 18px;
+  }
+  .conttipo{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+  }
+  .conttopdesemepnho{
+    display: flex;
+    width: 50%;
+    height: 120px;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+
+  }
+  .contline{
+    display: flex;
+    width: 100%;
+    height: 60px;
+    margin-top: 20px;
+    grid: 20px;
+    padding: 0;
+    margin: 0px;
+    margin-top: 20px;
+  }
+
+  .contline input{
+     width: 300px;
+      height: 48px;
+      margin-left: 20px;
+  }
+  .contsecond{
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+  .btnin{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    height: 120px;
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+  .tabela{
+    display: flex;
+    width: 100%;
+    height: auto;
+    margin-top: 300px;
+    border-color: #007bff00;
+  }
   

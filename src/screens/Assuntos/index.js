@@ -116,27 +116,9 @@ const Assuntos = () => {
     <div className={`assuntos-page ${darkMode ? 'dark-mode' : ''}`}>
       <div className='lineprof'><h2>Cadastro de Assuntos</h2> </div> 
      <div className='contescola'> 
-        <div className='topinput'> 
-      <input
-        type="text"
-        placeholder="Nome do Assunto"
-        value={nomeAssunto}
-        onChange={(e) => setNomeAssunto(e.target.value)}
-      />
-        </div>
+        
         <div className='continputs'> 
-      <select
-        value={disciplinaSelecionada}
-        onChange={(e) => setDisciplinaSelecionada(e.target.value)}
-        required
-      >
-        <option value="">Selecione a Disciplina</option>
-        {disciplinas.map((disciplina) => (
-          <option key={disciplina.id} value={disciplina.id}>
-            {disciplina.nome}
-          </option>
-        ))}
-      </select>
+     
 
       <select
         value={bimestreSelecionado}
@@ -149,6 +131,26 @@ const Assuntos = () => {
         <option value="3">Bimestre 3</option>
         <option value="4">Bimestre 4</option>
       </select>
+      <select
+        value={disciplinaSelecionada}
+        onChange={(e) => setDisciplinaSelecionada(e.target.value)}
+        required
+      >
+        <option value="">Selecione a Disciplina</option>
+        {disciplinas.map((disciplina) => (
+          <option key={disciplina.id} value={disciplina.id}>
+            {disciplina.nome}
+          </option>
+        ))}
+      </select>
+        </div>
+        <div className='topinput'> 
+      <input
+        type="text"
+        placeholder="Nome do Assunto"
+        value={nomeAssunto}
+        onChange={(e) => setNomeAssunto(e.target.value)}
+      />
         </div>
         <div className='contbtnassunto'> 
       <button onClick={handleSave}

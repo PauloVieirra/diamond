@@ -127,7 +127,7 @@ const MenuTopApp = () => {
              {userType === "ADM" ? (
               <>
                 <div className={styles.headline}>
-                  <div className={styles.buttonMenu} onClick={() => handleNavigation("/")}>Controle</div>
+                  <div className={styles.buttonMenu} onClick={() => handleNavigation("/")}>Inicio</div>
                 </div>
                <div className={styles.headline}>
                 <div className={styles.buttonMenu}>Suporte</div>

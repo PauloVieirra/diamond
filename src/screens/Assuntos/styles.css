@@ -206,7 +206,8 @@
   }
   .topinput{
     display: flex;
-    width: 40%;
+    width: 50%;
+    justify-content: center;
   }
   .topinput input{
     width: 90%;
@@ -214,7 +215,7 @@
   .continputs{
     display: flex;
     flex-direction: row;
-    width: 40%;
+    width: 30%;
     justify-content: flex-start;
     gap: 20px;
   }
@@ -224,6 +225,7 @@
   }
   .contbtnassunto{
     display: flex;
+    justify-content: flex-end;
     width: 20%;
   }
   
