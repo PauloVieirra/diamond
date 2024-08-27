@@ -129,9 +129,6 @@ const MenuTopApp = () => {
                 <div className={styles.headline}>
                   <div className={styles.buttonMenu} onClick={() => handleNavigation("/")}>Controle</div>
                 </div>
-                 <div className={styles.headline}>
-                 <div className={styles.buttonMenu} onClick={() => handleNavigation("/Cadastros")}>Cadastros</div>
-               </div>
                <div className={styles.headline}>
                 <div className={styles.buttonMenu}>Suporte</div>
               </div>
