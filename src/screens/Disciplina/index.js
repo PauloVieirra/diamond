@@ -7,12 +7,22 @@ const Disciplina = () => {
   const { darkMode } = useContext(StyleContext);
   const [nomeDisciplina, setNomeDisciplina] = useState('');
   const [disciplinas, setDisciplinas] = useState([]);
+  const [filteredDisciplinas, setFilteredDisciplinas] = useState([]);
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchDisciplinas();
   }, []);
+
+  useEffect(() => {
+    setFilteredDisciplinas(
+      disciplinas.filter(disciplina =>
+        disciplina.nome.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, disciplinas]);
 
   const fetchDisciplinas = async () => {
     const { data, error } = await supabase.from('disciplinas').select('id, nome');
@@ -81,46 +91,57 @@ const Disciplina = () => {
 
   return (
     <div className={`disciplina-page ${darkMode ? 'dark-mode' : ''}`}>
-      <div className='lineprof'><h2>Cadastro de Disciplina</h2> </div> 
+      <div className='lineprof'><h2>Cadastro de Disciplina</h2></div>
       <div className='conttoppro'>
-      <div className="form-group">
-      <div>Email:</div>
-      <input
-        type="text"
-        placeholder="Nome da Disciplina"
-        value={nomeDisciplina}
-        onChange={(e) => setNomeDisciplina(e.target.value)}
-      />
-       </div>
-       <div className='btninp'>
-        <button style={{width:'100px', height:'42px'}} onClick={handleSave}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
-       </div>
-      
-
-      {message && <p>{message}</p>}
+        <div className="form-group">
+          <input
+            type="text"
+            placeholder="Nome da Disciplina"
+            value={nomeDisciplina}
+            onChange={(e) => setNomeDisciplina(e.target.value)}
+          />
+        </div>
+        <div className='btninp'>
+          <button style={{ width: '100px', height: '42px' }} onClick={handleSave}>
+            {editingId ? 'Atualizar' : 'Cadastrar'}
+          </button>
+        </div>
+        {message && <p>{message}</p>}
       </div>
+
+      <div className='search-container'>
+        <input
+          type="text"
+          placeholder="Buscar Disciplina"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       <h2>Lista de Disciplinas</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {disciplinas.map((disciplina) => (
-            <tr key={disciplina.id}>
-              <td>{disciplina.nome}</td>
-              <td>
-              <div className='contbtns'>
-                <button className='btn_secondary' onClick={() => handleEdit(disciplina.id)}>Editar</button>
-                <button className='btnDell' onClick={() => handleDelete(disciplina.id)}>Excluir</button>
-              </div>
-              </td>
+      <div className='professor-list'>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredDisciplinas.map((disciplina) => (
+              <tr key={disciplina.id}>
+                <td>{disciplina.nome}</td>
+                <td>
+                  <div className='contbtns'>
+                    <button className='btn_secondary' onClick={() => handleEdit(disciplina.id)}>Editar</button>
+                    <button className='btnDell' onClick={() => handleDelete(disciplina.id)}>Excluir</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

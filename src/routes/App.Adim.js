@@ -4,6 +4,7 @@ import Dashboard from '../screens/Controle';
 import Cadastro from '../screens/Cadastros';
 import Escola from '../screens/Escolas';
 import Professor from '../screens/Professores';
+import Alunos from '../screens/Alunos';
 import Disciplina from '../screens/Disciplina';
 import Assuntos from '../screens/Assuntos';
 import Desempenho from '../screens/Desempenhos';
@@ -27,10 +28,11 @@ function AppAdm  () {
         <Route path="/Professores" element={<Professor/>}/>
         <Route path="/Escolas" element={<Escola/>}/>
         <Route path="/Disciplina" element={<Disciplina/>}/>
+        <Route path="/Alunos" element={<Alunos/>}/>
         <Route path="/Assuntos" element={<Assuntos/>}/>
         <Route path="/Desempenhos" element={<Desempenho/>}/>
       </Routes> 
-      <FooterWeb/>
+     
     </div>
   );
 };

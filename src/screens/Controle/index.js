@@ -112,7 +112,7 @@ const Dashboard = () => {
   // Funções de navegação
   const goToProfessores = () => navigate('/Professores');
   const goToEscolas = () => navigate('/Escolas');
-  const goToAlunos = () => navigate('/alunos');
+  const goToAlunos = () => navigate('/Alunos');
   const goToDisciplinas = () => navigate('/Disciplina');
   const goToAssuntos = () => navigate('/Assuntos');
   const goToDesempenhos = () => navigate('/Desempenhos');
@@ -135,7 +135,7 @@ const Dashboard = () => {
           <p>{stats.escolas}</p>
           <h2>Escolas</h2>
         </div>
-        <div className="dashboard-card">
+        <div className="dashboard-card" onClick={goToAlunos}>
           <p>{stats.alunos}</p>
           <h2>Alunos</h2>
         </div>

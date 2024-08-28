@@ -1,23 +1,54 @@
-
-.assuntos-page{
+.alunos-page{
   display: flex;
   flex-direction: column;
   height: calc(100vh - 80px);
 }
-.assuntos-container {
+.alunos-container {
+  flex: 1;
   overflow-y: auto; /* Torna a div rolável verticalmente */
-  padding: 0;
-  }
+  padding: 10px;
+  border: 1px solid #ddd; /* Opcional: para visualização */
+  margin-top: 10px; /* Espaçamento entre a busca e a tabela */
+}
+.lineprof{
+  display: flex;
+  width: 100%;
+  height: 80px;
+  align-items: center;
+  background-color: #d0d1fd;
+}
 
-.topline{
+.conttoppro{
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #d0d1fd;
+  }
+  
+  .conttopo{
+    
+    flex-direction: row;
     margin: 0px;
     width: auto;
     height: 50px;
+    justify-content: space-between;
     align-items: center;
-    padding-left: 20px;
     font-size: 20px;
   }
+  .inp{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    gap: 42px;
+  }
+ .btninp{
+  display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    justify-content: flex-end;
+ }
   
   .tabs {
     display: flex;
@@ -98,12 +129,15 @@
   
   .form-group {
     display: flex;
+    width: 100%;
+    height: auto;
     flex-direction: column;
     gap: 10px;
   }
 
   .form-group input{
     width: 100%;
+    padding: 0;
   }
 
   .conttbnsalvar{
@@ -204,33 +238,12 @@
   .contnewname{
     width: 320px;
   }
-  .topinput{
+  .search-bar{
     display: flex;
     width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 10px;
   }
-  .topinput input{
-    width: 50%;
-    margin-left: 10px;
+  .search-bar input{
+    width: 300px;
   }
-  .continputs{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: flex-start;
-    gap: 20px;
-  }
-  .continputs select{
-    width: 80%;
-    height: 52px;
-  }
-  .contbtnassunto{
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-  }
-  
+ 
   

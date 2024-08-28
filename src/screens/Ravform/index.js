@@ -30,9 +30,30 @@ export default function Ravgerador() {
   const [superacaodefinicao, setSuperacaodefinicao] = useState("");
   const [aplicacao, setAplicacao] = useState(false);
   const [options, setOptions] = useState([]); // Definindo o estado options
+  const [selectedDisciplina, setSelectedDisciplina] = useState(null);
+  const [selectedAssunto, setSelectedAssunto] = useState(null);
+  const [filteredItems, setFilteredItems] = useState([]); 
+  const [selectedRendimento, setSelectedRendimento] = useState(null);
+  const [selectedDiscipline, setSelectedDiscipline] = useState(null);
+const [selectedSubject, setSelectedSubject] = useState(null);
+console.log(selectedSubject);
+  
+const handleDisciplineSelect = (disciplineId) => {
+  setSelectedDiscipline(disciplineId);
+  setSelectedSubject(null); // Reset the subject when the discipline is changed
+};
 
+const handleSubjectSelect = (subjectId) => {
+  setSelectedAssunto(subjectId);
+  const selectedDisciplinaAssuntos = assuntos[selectedDisciplina];
+  const selectedSubject = selectedDisciplinaAssuntos.find((assunto) => assunto.id === subjectId);
+  const filteredItemsBySubject = texts[selectedSubject.nome];
+  setFilteredItems(filteredItemsBySubject);
+  console.log(selectedSubject.id); // Log the ID of the selected subject
+};
 
-useEffect(() => {
+ // Fetch de dados
+ useEffect(() => {
   const fetchPubli = async () => {
     try {
       const { data: alunoData, error: alunoError } = await supabase
@@ -59,7 +80,6 @@ useEffect(() => {
       setSuperacaomodelo(alunoData.superacaomodelo);
       setSuperacaodefinicao(alunoData.superacaodefinicao);
       
-
       const { data: disciplinasData, error: disciplinasError } = await supabase
         .from("disciplinas")
         .select("*");
@@ -67,19 +87,6 @@ useEffect(() => {
       if (disciplinasError) throw disciplinasError;
 
       setDisciplinas(disciplinasData);
-
-      const { data: bimestreData, error: bimestreError } = await supabase
-        .from("bimestre_1")
-        .select("*")
-        .eq("aluno_id", id)
-        .single();
-
-      if (bimestreError && bimestreError.code !== 'PGRST116') {
-        console.error(bimestreError);
-        return;
-      }
-
-      setBimestres(bimestreData || {});
 
       const { data: assuntosData, error: assuntosError } = await supabase
         .from("assuntos")
@@ -104,7 +111,94 @@ useEffect(() => {
   fetchPubli();
 }, [id]);
 
-  
+useEffect(() => {
+  if (selectedDisciplina && selectedAssunto) {
+    const filtered = assuntos[selectedDisciplina]?.filter(
+      (assunto) => assunto.id === selectedAssunto
+    );
+    setFilteredItems(filtered);
+  } else {
+    setFilteredItems([]);
+  }
+}, [selectedDisciplina, selectedAssunto]);
+
+
+
+useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // Fetch Disciplinas
+        const { data: disciplinasData, error: disciplinasError } = await supabase
+          .from("disciplinas")
+          .select("*");
+        if (disciplinasError) throw disciplinasError;
+
+        setDisciplinas(disciplinasData);
+
+        // Fetch Assuntos
+        const { data: assuntosData, error: assuntosError } = await supabase
+          .from("assuntos")
+          .select("*");
+        if (assuntosError) throw assuntosError;
+
+        const assuntosMap = disciplinasData.reduce((acc, disciplina) => {
+          acc[disciplina.id] = assuntosData.filter(
+            assunto => assunto.disciplina_id === disciplina.id
+          );
+          return acc;
+        }, {});
+
+        setAssuntos(assuntosMap);
+      } catch (error) {
+        console.error('Erro ao buscar dados iniciais:', error);
+      }
+    };
+
+    fetchInitialData();
+  }, [id, activeTab]);
+
+   // Função para filtrar itens com base nas seleções de disciplina, assunto e rendimento
+useEffect(() => {
+  const fetchFilteredItems = async () => {
+    if (selectedDisciplina && selectedAssunto && selectedRendimento) {
+      try {
+        const { data: filteredData, error } = await supabase
+          .from("relatorio_1")
+          .select("*")
+          .eq("disciplina_id", selectedDisciplina) // Filtrando pelo id da disciplina
+          .eq("assunto_id", selectedAssunto)      // Filtrando pelo id do assunto
+          .eq("rendimento", selectedRendimento);  // Filtrando pelo rendimento selecionado
+
+        if (error) {
+          console.error("Erro ao buscar itens filtrados", error);
+        } else {
+          setFilteredItems(filteredData);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar itens filtrados", error);
+      }
+    } else {
+      setFilteredItems([]); // Limpa a lista quando a condição de filtragem não é atendida
+    }
+  };
+
+  fetchFilteredItems();
+}, [selectedDisciplina, selectedAssunto, selectedRendimento]);
+
+// Funções de seleção para disciplinas e assuntos
+const handleDisciplinaSelect = (disciplinaId) => {
+  setSelectedDisciplina(disciplinaId);
+  setSelectedAssunto(null); // Resetar o assunto ao trocar a disciplina
+};
+
+const handleAssuntoSelect = (assuntoId) => {
+  setSelectedAssunto(assuntoId);
+};
+
+// Função de mudança para o rendimento
+const handleRendimentoChange = (e) => {
+  setSelectedRendimento(e.target.value); // Atualiza o estado do rendimento selecionado
+};
 
   const handleCheckboxChange = async (assunto, value) => {
     const label = getCheckboxLabel(value);
@@ -552,11 +646,18 @@ useEffect(() => {
                           value={annotations[assunto.nome] || ""}
                           onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)} />
                         </div>
+                        
                     </TabPanel>
                   ))}
+                   {filteredItems?.map((item) => (
+      <div key={item.id}>
+        {/* Render the item details */}
+      </div>
+    ))}
                 </Tabs>
               </TabPanel>
             ))}
+           
           </Tabs>
         </TabPanel>
       </Tabs>
@@ -564,6 +665,7 @@ useEffect(() => {
         <button onClick={handleUpdate}>Salvar</button>
       </div>
       </div>
+      
     </main>
   );
 }

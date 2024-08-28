@@ -10,6 +10,7 @@ const Professor = () => {
   const [emailProfessor, setEmailProfessor] = useState('');
   const [senhaProfessor, setSenhaProfessor] = useState('');
   const [professores, setProfessores] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(''); // Adicionado
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -57,55 +58,74 @@ const Professor = () => {
     setSnackbarOpen(false);
   };
 
+  // Função para filtrar professores
+  const filteredProfessores = professores.filter((professor) =>
+    professor.nome.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className={`professor-page ${darkMode ? 'dark-mode' : ''}`}>
-     <div className='lineprof'><h2>Cadastro de Professor</h2> </div> 
+      
+      <div className='lineprof'><h2>Cadastro de Professor</h2> </div> 
 
-    <div className='conttoppro'>
-
+      <div className='conttoppro'>
         <div className='inp'>
-      <div className="form-group">
-        <div>Email:</div>
-        <input
-          type="email"
-          value={emailProfessor}
-          onChange={(e) => setEmailProfessor(e.target.value)}
-        />
+          <div className="form-group">
+            <div>Email:</div>
+            <input
+              type="email"
+              value={emailProfessor}
+              onChange={(e) => setEmailProfessor(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <div>Senha:</div>
+            <input
+              type="password"
+              value={senhaProfessor}
+              onChange={(e) => setSenhaProfessor(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className='btninp'> 
+          <button onClick={handleSave} style={{width:'100px', height:'42px'}}>Cadastrar</button> 
+        </div>
       </div>
-      <div className="form-group">
-        <div>Senha:</div>
-        <input
-          type="password"
-          value={senhaProfessor}
-          onChange={(e) => setSenhaProfessor(e.target.value)}
-        />
-      </div>
-      </div>
-      <div className='btninp'> <button onClick={handleSave} style={{width:'100px', height:'42px'}}>Cadastrar</button> </div>
-     
-    </div>
 
-       <div> <h2>Lista de Professores</h2>  
-      <div> 
-      <table className="professor-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Email</th>
-          </tr>
-        </thead>
-        <tbody>
-          {professores.map((professor) => (
-            <tr key={professor.id}>
-              <td>{professor.id}</td>
-              <td>{professor.nome}</td>
-              <td>{professor.email}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className='search-container'>
+        <input
+          type="text"
+          placeholder="Buscar por nome"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: '300px' }}
+        />
       </div>
+
+      <div> 
+        <h2>Lista de Professores</h2>  
+        <div> 
+          <table className="professor-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProfessores.map((professor) => (
+                <tr key={professor.id}>
+                  <td>{professor.id}</td>
+                  <td>{professor.nome}</td>
+                  <td>{professor.email}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -115,7 +135,6 @@ const Professor = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </div>
     </div>
   );
 };

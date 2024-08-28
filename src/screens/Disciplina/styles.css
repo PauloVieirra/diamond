@@ -3,16 +3,15 @@
 .disciplina-page{
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 80px);
 }
 .container {
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    height: 100%;
-    margin: 0px ;
-    padding: 16px;
-    box-sizing: border-box;
-  }
+  flex: 1;
+  overflow-y: auto; /* Torna a div rolável verticalmente */
+  padding: 10px;
+  border: 1px solid #ddd; /* Opcional: para visualização */
+  margin-top: 10px; /* Espaçamento entre a busca e a tabela */
+}
   .topline{
     display: flex;
     margin: 0px;

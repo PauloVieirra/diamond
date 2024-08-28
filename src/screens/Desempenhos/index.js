@@ -289,7 +289,7 @@ const Desempenho = () => {
           type="text"
           value={desempenho}
           onChange={(e) => setDesempenho(e.target.value)}
-          style={{width:'80%', height:'300px', padding:'20px', fontSize:'16px'}}
+          style={{width:'80%', height:'200px', padding:'20px', fontSize:'16px'}}
         />
       </div>
       <div className="tabela"> 
@@ -309,8 +309,10 @@ const Desempenho = () => {
                 <td>{item.titulo}</td>
                 <td>{item.text}</td>
                 <td>
-                  <button onClick={() => handleEdit(item)}>Editar</button>
-                  <button onClick={() => handleDelete(item.id)}>Excluir</button>
+                <div className='contbtns'>
+                <button className='btn_secondary' onClick={() => handleEdit(item)}>Editar</button>
+                <button className='btnDell' onClick={() => handleDelete(item.id)}>Excluir</button>
+                 </div>
                 </td>
               </tr>
             ))}

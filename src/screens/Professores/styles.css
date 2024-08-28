@@ -1,7 +1,23 @@
 .professor-page{
   display: flex;
   flex-direction: column;
+ 
 }
+.professor-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.professor-table th, .professor-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.professor-table th {
+  background-color: #f4f4f4;
+  text-align: left;
+}
+
 .lineprof{
   display: flex;
   width: 100%;
