@@ -56,8 +56,8 @@ console.log(selectedSubject);
       setIstea(alunoData.istea); 
       setFaltas(alunoData.faltas);
       setTurno(alunoData.Turno);
-      setCurso(alunoData.curso);
-      setTurma(alunoData.turma);
+      setCurso(alunoData.Curso);
+      setTurma(alunoData.Turma);
       setAplicacao(alunoData.aplicacao);
       setAdequacao(alunoData.adequacao);
       setTemporalidade(alunoData.temporalidade)
@@ -373,8 +373,8 @@ useEffect(() => {
       faltas,
       name,
       serie,
-      turma,
-      curso,
+      Turma: turma,
+      Curso: curso,
       aplicacao,
       adequacao,
       temporalidade,
