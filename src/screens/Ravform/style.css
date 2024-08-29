@@ -2,8 +2,25 @@
 .containermain{
   display: flex;
   flex-direction: column;
-  padding: 16px;
-
+  
+}
+.containermain__header{
+  display: flex;
+  width: 100%;
+  height: 80px;
+  background-color: #d0d1fd;
+}
+.cont-ravform {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0px ;
+}
+.topravform{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+ 
 }
 
 .react-tabs__tab-list {
@@ -130,7 +147,7 @@
 .form-pcd {
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(6, 1fr); /* Define exatamente 5 colunas */
+  grid-template-columns: repeat(8, 1fr); /* Define exatamente 5 colunas */
   gap: 16px; /* Espaço entre os itens */
 }
 
@@ -156,6 +173,18 @@
   display: flex;
   width: 100%;
   height: 48px;
+}
+.lineipnt{
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  align-items:flex-start;
+  justify-content:space-between;
+  background-color: #dddddd;
+  margin: 2px;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 6px;
 }
 
 

@@ -145,6 +145,7 @@ const Assuntos = () => {
   ];
 
   return (
+    <main> 
     <div className={`assuntos-page ${darkMode ? 'dark-mode' : ''}`}>
       <div className='assuntos-container'> 
         <div className='lineprof'><h2>Cadastro de Assuntos</h2></div> 
@@ -258,6 +259,7 @@ const Assuntos = () => {
         </MuiAlert>
       </Snackbar>
     </div>
+    </main>
   );
 };
 

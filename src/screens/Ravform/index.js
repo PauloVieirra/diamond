@@ -35,8 +35,18 @@ export default function Ravgerador() {
   const [filteredItems, setFilteredItems] = useState([]); 
   const [selectedRendimento, setSelectedRendimento] = useState(null);
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
-const [selectedSubject, setSelectedSubject] = useState(null);
-console.log(selectedSubject);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [bloco, setBloco] = useState(null);
+  console.log(bloco);
+
+  const handleSelectChange = (event) => {
+    const selectedValue = event.target.value;
+    if (selectedValue === "Bloco 1") {
+      setBloco(false);
+    } else if (selectedValue === "Bloco 2") {
+      setBloco(true);
+    }
+  };
   
  // Fetch de dados
  useEffect(() => {
@@ -373,6 +383,7 @@ useEffect(() => {
       faltas,
       name,
       serie,
+      Bloco: bloco,
       Turma: turma,
       Curso: curso,
       aplicacao,
@@ -433,60 +444,103 @@ useEffect(() => {
         <div className="containermain__header">
            <h2>Responder RAV</h2>
         </div>
-      <div className="cont-name">
+      <div className="cont-name" >
         <label>Nome</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          style={{width:'400px'}}
         />
       </div>
 
       <div className="form-group">
       <div className="form-update">
+
       <div className="form-pcd">
-      <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Estudante PCD </div>
+
+     <div className="lineipnt"> 
+        Estudante PCD  
+        <div> 
         <input
           type="checkbox"
           checked={istea}
           onChange={(e) => setIstea(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
-         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Adequacao curricular </div>
+        </div>
+     </div>
+     
+       <div className="lineipnt"> 
+         <div>Adequacao curricular </div>
+         <div> 
         <input
           type="checkbox"
           checked={adequacao}
           onChange={(e) => setAdequacao(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
-         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Indicado para temporalidade </div>
+        </div>
+        </div>
+        <div className="lineipnt"> 
+         <div>Indicado para temporalidade </div>
+         <div> 
         <input
           type="checkbox"
           checked={temporalidade}
           onChange={(e) => setTemporalidade(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
-         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Sala de recursos </div>
+        </div>
+
+        </div>
+        <div className="lineipnt"> 
+         <div>Sala de recursos </div>
+         <div> 
         <input
           type="checkbox"
           checked={saladerecursos}
           onChange={(e) => setSaladerecursos(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
-          <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>Aplicação Curricular Programa SuperAção </div>
+        </div>
+
+        </div>
+        <div className="lineipnt"> 
+          <div>Aplicação Curricular Programa SuperAção </div>
+          <div> 
         <input
           type="checkbox"
           checked={aplicacao}
           onChange={(e) => setAplicacao(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
-         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px"}}>SuperAção - iEducar </div>
+        </div>
+        </div>
+
+        <div className="lineipnt"> 
+         <div>SuperAção - iEducar </div>
+          <div> 
         <input
           type="checkbox"
           checked={superacao}
           onChange={(e) => setSuperacao(e.target.checked)}
-          style={{width:"100px", height:"28px"}}
+          style={{width:"20px", height:"28px"}}
         />
+        </div>
+
+        </div>
+         <div>
+        
+    
+      <select onChange={handleSelectChange} value={bloco === null ? "" : bloco ? "Bloco 2" : "Bloco 1"}>
+        <option value="" disabled hidden>Selecione um bloco</option>
+        <option value="Bloco 1">1º Bloco</option>
+        <option value="Bloco 2"> 2º Bloco</option>
+      </select>
+
+     
+    </div>
         
         {superacao && (
           <div style={{ display: 'flex', alignItems: 'center', width: 'auto', height: '48px' }}>
