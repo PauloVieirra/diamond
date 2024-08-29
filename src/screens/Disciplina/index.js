@@ -34,17 +34,18 @@ const Disciplina = () => {
   };
 
   const handleSave = async () => {
+    // Verifica se a disciplina já existe
     if (await checkIfExists('disciplinas', 'nome', nomeDisciplina)) {
       setMessage('Disciplina já cadastrada.');
       return;
     }
-
+  
     if (editingId) {
       const { error } = await supabase
         .from('disciplinas')
         .update({ nome: nomeDisciplina })
         .eq('id', editingId);
-
+  
       if (error) {
         setMessage(`Erro ao atualizar disciplina: ${error.message}`);
       } else {
@@ -52,17 +53,29 @@ const Disciplina = () => {
         setEditingId(null);
       }
     } else {
-      const { error } = await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
-      if (error) {
-        setMessage(`Erro ao salvar disciplina: ${error.message}`);
+      // Insere a nova disciplina
+      const { error: insertError } = await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
+      if (insertError) {
+        setMessage(`Erro ao salvar disciplina: ${insertError.message}`);
+        return;
+      }
+  
+      // Adiciona a nova coluna na tabela `bimestre_1` usando o nome exato da disciplina
+      const { error: alterError } = await supabase.rpc('add_column_to_bimestre_1', {
+        column_name: nomeDisciplina // Passa o nome exato da disciplina
+      });
+  
+      if (alterError) {
+        setMessage(`Erro ao adicionar coluna na tabela bimestre_1: ${alterError.message}`);
       } else {
-        setMessage('Disciplina cadastrada com sucesso!');
+        setMessage('Disciplina cadastrada e coluna adicionada na tabela bimestre_1 com sucesso!');
       }
     }
-
+  
     setNomeDisciplina('');
     fetchDisciplinas();
   };
+  
 
   const handleEdit = (id) => {
     const disciplina = disciplinas.find((d) => d.id === id);

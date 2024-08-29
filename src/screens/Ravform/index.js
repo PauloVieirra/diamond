@@ -38,20 +38,6 @@ export default function Ravgerador() {
 const [selectedSubject, setSelectedSubject] = useState(null);
 console.log(selectedSubject);
   
-const handleDisciplineSelect = (disciplineId) => {
-  setSelectedDiscipline(disciplineId);
-  setSelectedSubject(null); // Reset the subject when the discipline is changed
-};
-
-const handleSubjectSelect = (subjectId) => {
-  setSelectedAssunto(subjectId);
-  const selectedDisciplinaAssuntos = assuntos[selectedDisciplina];
-  const selectedSubject = selectedDisciplinaAssuntos.find((assunto) => assunto.id === subjectId);
-  const filteredItemsBySubject = texts[selectedSubject.nome];
-  setFilteredItems(filteredItemsBySubject);
-  console.log(selectedSubject.id); // Log the ID of the selected subject
-};
-
  // Fetch de dados
  useEffect(() => {
   const fetchPubli = async () => {
@@ -185,20 +171,7 @@ useEffect(() => {
   fetchFilteredItems();
 }, [selectedDisciplina, selectedAssunto, selectedRendimento]);
 
-// Funções de seleção para disciplinas e assuntos
-const handleDisciplinaSelect = (disciplinaId) => {
-  setSelectedDisciplina(disciplinaId);
-  setSelectedAssunto(null); // Resetar o assunto ao trocar a disciplina
-};
 
-const handleAssuntoSelect = (assuntoId) => {
-  setSelectedAssunto(assuntoId);
-};
-
-// Função de mudança para o rendimento
-const handleRendimentoChange = (e) => {
-  setSelectedRendimento(e.target.value); // Atualiza o estado do rendimento selecionado
-};
 
   const handleCheckboxChange = async (assunto, value) => {
     const label = getCheckboxLabel(value);
@@ -253,20 +226,10 @@ const handleRendimentoChange = (e) => {
     "Turma SuperAção Reduzida."
   ];
 
-  const handleiEducar = (e) => {
-    setSuperacao(e.target.checked);
-    if (e.target.checked) {
-      setSuperacaodefinicao(iEducarArray.join("\n"));
-    } else {
-      setSuperacaodefinicao("");
-    }
-  };
-
   const handleTextChange = (e) => {
     setSuperacaomodelo(e.target.value);
   };
   
-
   const getCheckboxLabel = (value) => {
     switch (value) {
       case "1":
@@ -403,9 +366,6 @@ const handleRendimentoChange = (e) => {
     }
   };
   
-  
-  
-
   const handleUpdate = async () => {
     // Preparar dados para a tabela alunos
     const alunoData = {
@@ -465,8 +425,6 @@ const handleRendimentoChange = (e) => {
     alert("Dados atualizados com sucesso!");
   };
   
-  
-
   if (!publi) return <div>Carregando...</div>;
 
   return (

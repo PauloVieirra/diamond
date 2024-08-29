@@ -17,6 +17,8 @@ const ListClass = () => {
   const [escolasOptions, setEscolasOptions] = useState([]);
   const [cursosOptions, setCursosOptions] = useState([]);
   const [turmasOptions, setTurmasOptions] = useState([]);
+  const [professorData, setProfessorData] = useState(null);
+
 
   useEffect(() => {
     if (complit) {
@@ -37,6 +39,7 @@ const ListClass = () => {
             setSelectedEscola(professorData.escola);
             setSelectedCurso(professorData.Curso); 
             setSelectedTurma(professorData.Turma);
+            setProfessorData(professorData);
 
             // Atualizar opções de escola
             const { data: escolas, error: escolasError } = await supabase
@@ -55,6 +58,8 @@ const ListClass = () => {
               
               setEscolasOptions(uniqueEscolas);
             }
+
+            setTurmasOptions([{ value: professorData.Turma, label: professorData.Turma }]);
 
             // Atualizar opções de curso e turma
             const { data: cursos, error: cursosError } = await supabase
@@ -222,9 +227,12 @@ const ListClass = () => {
               className={styles.select}
             >
               <option value="">Turma</option>
-              {turmasOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
+              {/* Mostrar apenas a turma associada ao professor */}
+              {professorData && professorData.Turma && (
+                <option key={professorData.Turma} value={professorData.Turma}>
+                  {professorData.Turma}
+                </option>
+              )}
             </select>
           </div>
 
