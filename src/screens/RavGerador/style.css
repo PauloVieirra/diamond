@@ -73,11 +73,13 @@ button {
 }
 .conttopinit{
     display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100px;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    width: 100%;
+    height: auto;
     font-weight: 600;
+    margin-bottom: 30px;
 }
 .tabela{
     display: flex;
@@ -215,8 +217,9 @@ width: 100%;
 }
 
 .lineclean{
-  border: none;
-  
+  border: 1px;
+  border-color: rgba(0, 0, 0, 0);
+  border-style: solid;
 }
 
 

@@ -307,7 +307,7 @@ const RavGerador = () => {
                       ? "(  ) não ( x ) sim"
                       : "( x ) não (  ) sim"}
                     <br />
-                    <div className="line">
+                    <div className="lineinto">
                       
                       {publi.superacao === true && (
                         <div className="lineclean">
@@ -393,10 +393,6 @@ const RavGerador = () => {
                     <div className="lineintoitem">
                     Total de Faltas:{publi.faltas}
                     </div>
-                  </div>
-                
-                 
-                  <div className="line">
                   </div>
                 </div>
               </div>

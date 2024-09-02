@@ -181,7 +181,8 @@ const Assuntos = () => {
               onChange={(e) => setCursoSelecionado(e.target.value)}
               required
             >
-              <option value="">Selecione um curso</option>
+              <option value="">Selecione uma série
+              </option>
               {cursoOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
