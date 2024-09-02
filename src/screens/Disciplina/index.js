@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import supabase from '../../servers/SupabaseConect';
 import { StyleContext } from '../../context/StyleContext';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import './styles.css';
 
 const Disciplina = () => {
@@ -8,9 +10,11 @@ const Disciplina = () => {
   const [nomeDisciplina, setNomeDisciplina] = useState('');
   const [disciplinas, setDisciplinas] = useState([]);
   const [filteredDisciplinas, setFilteredDisciplinas] = useState([]);
-  const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   useEffect(() => {
     fetchDisciplinas();
@@ -27,55 +31,69 @@ const Disciplina = () => {
   const fetchDisciplinas = async () => {
     const { data, error } = await supabase.from('disciplinas').select('id, nome');
     if (error) {
-      setMessage(`Erro ao buscar disciplinas: ${error.message}`);
+      setSnackbarMessage(`Erro ao buscar disciplinas: ${error.message}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     } else {
       setDisciplinas(data);
     }
   };
 
   const handleSave = async () => {
-    // Verifica se a disciplina já existe
-    if (await checkIfExists('disciplinas', 'nome', nomeDisciplina)) {
-      setMessage('Disciplina já cadastrada.');
+    if (!nomeDisciplina.trim()) {
+      setSnackbarMessage('O nome da disciplina é obrigatório.');
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
       return;
     }
-  
+
+    if (await checkIfExists('disciplinas', 'nome', nomeDisciplina)) {
+      setSnackbarMessage('Disciplina já cadastrada.');
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+
     if (editingId) {
       const { error } = await supabase
         .from('disciplinas')
         .update({ nome: nomeDisciplina })
         .eq('id', editingId);
-  
+
       if (error) {
-        setMessage(`Erro ao atualizar disciplina: ${error.message}`);
+        setSnackbarMessage(`Erro ao atualizar disciplina: ${error.message}`);
+        setSnackbarSeverity('error');
       } else {
-        setMessage('Disciplina atualizada com sucesso!');
+        setSnackbarMessage('Disciplina atualizada com sucesso!');
+        setSnackbarSeverity('success');
         setEditingId(null);
       }
     } else {
-      // Insere a nova disciplina
       const { error: insertError } = await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
       if (insertError) {
-        setMessage(`Erro ao salvar disciplina: ${insertError.message}`);
+        setSnackbarMessage(`Erro ao salvar disciplina: ${insertError.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
         return;
       }
-  
-      // Adiciona a nova coluna na tabela `bimestre_1` usando o nome exato da disciplina
+
       const { error: alterError } = await supabase.rpc('add_column_to_bimestre_1', {
-        column_name: nomeDisciplina // Passa o nome exato da disciplina
+        column_name: nomeDisciplina
       });
-  
+
       if (alterError) {
-        setMessage(`Erro ao adicionar coluna na tabela bimestre_1: ${alterError.message}`);
+        setSnackbarMessage(`Erro ao adicionar disciplina: ${alterError.message}`);
+        setSnackbarSeverity('error');
       } else {
-        setMessage('Disciplina cadastrada e coluna adicionada na tabela bimestre_1 com sucesso!');
+        setSnackbarMessage('Disciplina cadastrada com sucesso!');
+        setSnackbarSeverity('success');
       }
     }
-  
+
     setNomeDisciplina('');
     fetchDisciplinas();
+    setSnackbarOpen(true);
   };
-  
 
   const handleEdit = (id) => {
     const disciplina = disciplinas.find((d) => d.id === id);
@@ -86,20 +104,29 @@ const Disciplina = () => {
   const handleDelete = async (id) => {
     const { error } = await supabase.from('disciplinas').delete().eq('id', id);
     if (error) {
-      setMessage(`Erro ao excluir disciplina: ${error.message}`);
+      setSnackbarMessage(`Erro ao excluir disciplina: ${error.message}`);
+      setSnackbarSeverity('error');
     } else {
-      setMessage('Disciplina excluída com sucesso!');
+      setSnackbarMessage('Disciplina excluída com sucesso!');
+      setSnackbarSeverity('success');
       fetchDisciplinas();
     }
+    setSnackbarOpen(true);
   };
 
   const checkIfExists = async (table, column, value) => {
     const { data, error } = await supabase.from(table).select(`${column}`).eq(column, value);
     if (error) {
-      setMessage(`Erro ao verificar se existe: ${error.message}`);
+      setSnackbarMessage(`Erro ao verificar se existe: ${error.message}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
       return false;
     }
     return data.length > 0;
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -115,11 +142,14 @@ const Disciplina = () => {
           />
         </div>
         <div className='btninp'>
-          <button style={{ width: '100px', height: '42px' }} onClick={handleSave}>
+          <button
+            style={{ width: '100px', height: '42px' }}
+            onClick={handleSave}
+            disabled={!nomeDisciplina.trim()} // Desativa o botão se o campo estiver vazio
+          >
             {editingId ? 'Atualizar' : 'Cadastrar'}
           </button>
         </div>
-        {message && <p>{message}</p>}
       </div>
 
       <div className='search-container'>
@@ -155,6 +185,15 @@ const Disciplina = () => {
           </tbody>
         </table>
       </div>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
