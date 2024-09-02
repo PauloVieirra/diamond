@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { useAuth } from "../../context/AuthContext";
 import "react-tabs/style/react-tabs.css";
 import supabase from "../../servers/SupabaseConect";
 import './style.css';
@@ -25,7 +26,7 @@ export default function Ravgerador() {
   const [adequacao, setAdequacao] = useState(false); 
   const [temporalidade, setTemporalidade] = useState(false); 
   const [saladerecursos, setSaladerecursos ] = useState (false);
-  const [superacao, setSuperacao ] = useState (false);
+  const [superacao, setSuperacao ] = useState ('');
   const [superacaomodelo, setSuperacaomodelo ] = useState (" ");
   const [superacaodefinicao, setSuperacaodefinicao] = useState("");
   const [aplicacao, setAplicacao] = useState(false);
@@ -36,7 +37,12 @@ export default function Ravgerador() {
   const [selectedRendimento, setSelectedRendimento] = useState(null);
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [professorName, setProfessorName] = useState("");
+  console.log(professorName);
+
   const [bloco, setBloco] = useState(null);
+  const {user } = useAuth();
+  const anoAtual = new Date().getFullYear();
   console.log(bloco);
 
   const handleSelectChange = (event) => {
@@ -47,6 +53,33 @@ export default function Ravgerador() {
       setBloco(true);
     }
   };
+
+  useEffect(() => {
+    const fetchProfessorName = async () => {
+      try {
+        // Certifique-se de que user.uid é um texto que corresponde ao campo uid na tabela
+        const { data: professorData, error: professorError } = await supabase 
+          .from("professores")
+          .select("nome")  // Nome da coluna que contém o nome do professor
+          .eq("uid", user.id)  // Usando user.id como uid para buscar na coluna uid
+          .single();  // Use single() para garantir que você recebe apenas um resultado
+  
+        if (professorError) throw professorError;
+  
+        setProfessorName(professorData?.nome);  // Atualize o estado com o nome do professor
+      } catch (error) {
+        console.error('Erro ao buscar nome do professor:', error);
+      }
+    };
+  
+    if (user.id) {  // Verifique se user.id está disponível antes de fazer a consulta
+      fetchProfessorName();
+    }
+  }, [user.id]);  // Refaça a busca sempre que user.id mudar
+  
+  
+  
+  
   
  // Fetch de dados
  useEffect(() => {
@@ -224,16 +257,16 @@ useEffect(() => {
   useEffect(() => {
     // Defina as opções para o campo de seleção
     setOptions([
-      "Classe comum com atendimento personalizado.",
-      "Turma SuperAção.",
-      "Turma SuperAção Reduzida."
+      "Classe comum com atendimento personalizado",
+      "Turma SuperAção",
+      "Turma SuperAção Reduzida"
     ]);
   }, []);
 
   const iEducarArray = [
-    "Classe comum com atendimento personalizado.",
-    "Turma SuperAção.",
-    "Turma SuperAção Reduzida."
+    "Classe comum com atendimento personalizado",
+    "Turma SuperAção",
+    "Turma SuperAção Reduzida"
   ];
 
   const handleTextChange = (e) => {
@@ -444,8 +477,14 @@ useEffect(() => {
         <div className="containermain__header">
            <h2>Responder RAV</h2>
         </div>
+        <div className="line">
+         <div className="contdatatop">Ano letivo: {anoAtual}</div>
+         <div className="contdatatop">Coordenação Regional de Ensino: {publi.Orgao}</div>
+         <div className="contdatatop">Unidade Escolar: {publi.Instituicao}</div>
+         <div className="contdatatop">Professor: {professorName}</div>
+        </div>
       <div className="cont-name" >
-        <label>Nome</label>
+        <label>Estudante</label>
         <input
           type="text"
           value={name}
@@ -455,12 +494,13 @@ useEffect(() => {
       </div>
 
       <div className="form-group">
+    
       <div className="form-update">
 
       <div className="form-pcd">
 
      <div className="lineipnt"> 
-        Estudante PCD  
+     Apresenta deficiência ou TEA ? 
         <div> 
         <input
           type="checkbox"
@@ -507,16 +547,26 @@ useEffect(() => {
 
         </div>
         <div className="lineipnt"> 
-          <div>Aplicação Curricular Programa SuperAção </div>
-          <div> 
-        <input
-          type="checkbox"
-          checked={aplicacao}
-          onChange={(e) => setAplicacao(e.target.checked)}
-          style={{width:"20px", height:"28px"}}
-        />
-        </div>
-        </div>
+      <div>Aplicação Curricular Programa SuperAção</div>
+      <div>
+        <select
+          value={aplicacao}
+          onChange={(e) => setAplicacao(e.target.value)}
+          style={{ width: "200px", height: "30px" }}
+        >
+          <option value="">Selecione...</option>
+          <option value="Sim">
+            Sim
+          </option>
+          <option value="Não">
+           Não
+          </option>
+          <option value="Parcialmente">
+          Parcialmente
+          </option>
+        </select>
+      </div>
+    </div>
 
         <div className="lineipnt"> 
          <div>SuperAção - iEducar </div>

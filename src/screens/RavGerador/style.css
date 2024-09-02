@@ -2,13 +2,13 @@
     display: flex;
     width: 100%;
     overflow-y: auto;
-    width: 100%;
     height: calc(100vh - 80px);
     justify-content: center;
-  flex-direction: column;
-  align-items: center;
+    flex-direction: column;
+    align-items: center;
     margin: 0;
     padding: 0; 
+  
 }
 .conttabela{
   display: flex;
@@ -21,7 +21,8 @@
 
 .container {
   width: 100%;
-  max-width: 100%; /* Ajuste conforme necessário */
+  max-width: 900px; /* Ajuste conforme necessário */
+  min-width: 900px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -91,7 +92,7 @@ button {
   flex-direction: column;
   border-collapse: collapse; /* Faz com que as bordas fiquem unidas */
   border: 1px solid black; /* Borda da tabela */
-  width: 100%; /* Ajusta a largura da tabela para ocupar o espaço disponível */
+  width: auto; /* Ajusta a largura da tabela para ocupar o espaço disponível */
   height: auto;
 }
 .conttable {
@@ -104,6 +105,7 @@ button {
 .contcolumm{
   display: flex;
   width: 100%;
+  min-width: 798px;
 }
 
 
@@ -151,9 +153,11 @@ width: 100%;
     border-style: inset;
     border-color: rgb(66, 66, 66);
     padding: 4px;
+    font-size: 16px;
 }
 .lineinto{
   margin-left: 8px;
+  font-size: 16px;
 }
 .contsecondcolum{
   display: flex;
@@ -194,6 +198,25 @@ width: 100%;
 .contint div {
   margin: 0;
   padding: 0;
+}
+
+.lineintoitem{
+  display: flex;
+  width: auto;
+  border: 1px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-style: solid;
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+  border-color: rgb(49, 49, 49);
+  
+}
+
+.lineclean{
+  border: none;
+  
 }
 
 

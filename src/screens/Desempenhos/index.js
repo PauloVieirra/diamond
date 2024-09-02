@@ -83,7 +83,7 @@ const Desempenho = () => {
 
     const { data, error } = await supabase
       .from(table)
-      .select("id, titulo, text, id_disciplina, id_assunto")
+      .select("id, text, id_disciplina, id_assunto")
       .eq("id_disciplina", disciplinaSelecionada)
       .eq("id_assunto", assuntoSelecionado);
 
@@ -99,8 +99,8 @@ const Desempenho = () => {
       !disciplinaSelecionada ||
       !assuntoSelecionado ||
       !desempenho ||
-      !tipoDesempenho ||
-      !titulo
+      !tipoDesempenho 
+      
     ) {
       setMessage("Preencha todos os campos.");
       return;
@@ -126,7 +126,6 @@ const Desempenho = () => {
       const { error } = await supabase
         .from(table)
         .update({
-          titulo,
           text: desempenho,
           id_disciplina: disciplinaSelecionada,
           id_assunto: assuntoSelecionado,
@@ -142,7 +141,6 @@ const Desempenho = () => {
     } else {
       const { error } = await supabase.from(table).insert([
         {
-          titulo,
           text: desempenho,
           id_disciplina: disciplinaSelecionada,
           id_assunto: assuntoSelecionado,
@@ -157,7 +155,6 @@ const Desempenho = () => {
     }
 
     setDesempenho("");
-    setTitulo("");
     setDisciplinaSelecionada("");
     setAssuntoSelecionado("");
     setTipoDesempenho("");
@@ -165,7 +162,6 @@ const Desempenho = () => {
   };
 
   const handleEdit = (desempenho) => {
-    setTitulo(desempenho.titulo);
     setDesempenho(desempenho.text);
     setEditarDesempenho(desempenho);
   };
@@ -272,15 +268,6 @@ const Desempenho = () => {
     </div>
       </div>
    <div className="contsecond" > 
-      <div className="contline">
-        <label htmlFor="titulo">Título:</label>
-        <input
-          id="titulo"
-          type="text"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-        />
-      </div>
 
       <div className="contline">
         <label htmlFor="desempenho">Desempenho:</label>
@@ -298,7 +285,7 @@ const Desempenho = () => {
         <table>
           <thead>
             <tr>
-              <th>Título</th>
+              <th></th>
               <th>Desempenho</th>
               <th>Ações</th>
             </tr>

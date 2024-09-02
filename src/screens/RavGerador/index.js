@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { PDFDocument, rgb } from 'pdf-lib';
 import html2canvas from "html2canvas";
 import supabase from "../../servers/SupabaseConect";
@@ -16,6 +17,32 @@ const RavGerador = () => {
   const [location, setLocation] = useState(null);
   const [dateTime, setDateTime] = useState({ day: '', month: '', year: '' });
   const [city, setCity] = useState('');
+  const [professorName, setProfessorName] = useState("");
+  const {user } = useAuth();
+  const anoAtual = new Date().getFullYear();
+
+  useEffect(() => {
+    const fetchProfessorName = async () => {
+      try {
+        // Certifique-se de que user.uid é um texto que corresponde ao campo uid na tabela
+        const { data: professorData, error: professorError } = await supabase 
+          .from("professores")
+          .select("nome")  // Nome da coluna que contém o nome do professor
+          .eq("uid", user.id)  // Usando user.id como uid para buscar na coluna uid
+          .single();  // Use single() para garantir que você recebe apenas um resultado
+  
+        if (professorError) throw professorError;
+  
+        setProfessorName(professorData?.nome);  // Atualize o estado com o nome do professor
+      } catch (error) {
+        console.error('Erro ao buscar nome do professor:', error);
+      }
+    };
+  
+    if (user.id) {  // Verifique se user.id está disponível antes de fazer a consulta
+      fetchProfessorName();
+    }
+  }, [user.id]);  // Refaça a busca sempre que user.id mudar
 
   useEffect(() => {
     // Recuperar data
@@ -201,7 +228,7 @@ const RavGerador = () => {
               <div className="contcolumm">
                 <div className="contlinestable">
                   <div className="line">
-                   <div className="lineinto"> Ano Letivo: {publi.Data} </div>
+                   <div className="lineinto"> Ano Letivo:  {anoAtual} </div>
                   </div>
                   <div className="line">
                   <div className="lineinto"> Coordenação Regional de Ensino: {publi.CRE} </div>
@@ -210,33 +237,166 @@ const RavGerador = () => {
                   <div className="lineinto">  Unidade Escolar: {publi.Instituicao} </div>
                   </div>
                   <div className="line">
-                  <div className="lineinto">  Registro: {publi.Diaregistro} </div>
+                  <div className="lineinto">
+                    Bloco: {" "}
+                          {publi.bloco === true
+                            ? "1º Bloco ( ) 2º Bloco (x)"
+                            : "1º Bloco (x) 2º Bloco ( )"}
+                          <br />
+                   </div>
                   </div>
                   <div className="line">
-                    Nome do aluno(a): {publi.name}
-                  </div>
-                  <div className="line">
-                    Data de Nascimento: {publi.birthDate}
-                  </div>
-                  <div className="line">
-                    Série/Ano: {publi.curso}
-                  </div>
-                  <div className="line">
-                    Turno: {publi.Turno}
-                  </div>
-                  <div className="line">
-                    <div className="contint">
-                      Adequação: {publi.adequacao ? "Sim" : "Não"}
+                  <div className="lineintoitem">  Ano: {publi.Curso} </div> 
+                  <div className="lineintoitem">  Turma: {publi.Turma} </div>
+                  <div className="lineinto">
+                      Turno: {" "}
+                      {publi.Turno === " Matutino" 
+                        ? "( x ) Matutino  ( ) Vespertino  ( ) Integral"
+                        : publi.Turno === " Vespertino"
+                        ? "( ) Matutino  ( x ) Vespertino  ( ) Integral"
+                        : publi.Turno === " Integral"
+                        ? "( ) Matutino  ( ) Vespertino  ( x ) Integral"
+                        : "( ) Matutino  ( ) Vespertino  ( ) Integral" // Caso padrão se nenhum valor for igual
+                      }
+                      <br />
                     </div>
-                    <div className="contint">
-                      Temporalidade: {publi.temporalidade ? "Sim" : "Não"}
+                  </div>
+                  <div className="line">
+                   <div className="lineinto">Professor(a) regente da turma: {professorName}</div> 
+                  </div>
+                  <div className="line">
+                   <div className="lineinto">Professor(a)</div> 
+                  </div>
+                  <div className="line">
+                   <div className="lineinto">Professor(a)</div> 
+                  </div>
+                  <div className="line">
+                  <div className="lineinto">Estudante: {publi.name}</div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto"> 
+                  Apresenta Deficiência ou TEA?: {" "}
+                          {publi.isTea === true
+                            ? "(  ) não ( x ) sim"
+                            : "( x ) não (  ) sim"}
+                          <br />
+                    </div>      
+                   </div>
+                   <div className="line">
+                    <div className="lineinto"> 
+                    Houve adequação curricular?: {" "}
+                          {publi.adequacao === true
+                            ? "(  ) não ( x ) sim"
+                            : "( x ) não (  ) sim"}
+                          <br />
+                    </div>      
+                   </div>
+                   <div className="line">
+                    <div className="lineinto"> 
+                    Estudante indicado para temporalidade?: {" "}
+                          {publi.adequacao === true
+                            ? "(  ) não ( x ) sim"
+                            : "( x ) não (  ) sim"}
+                          <br />
+                    </div>      
+                   </div>
+                   <div className="line">
+                  <div className="lineinto">
+                    Estudante do Programa SuperAção "setado" no Sistema de Gestão i-Educar?: {" "}
+                    {publi.superacao
+                      ? "(  ) não ( x ) sim"
+                      : "( x ) não (  ) sim"}
+                    <br />
+                    <div className="line">
+                      
+                      {publi.superacao === true && (
+                        <div className="lineclean">
+                          {publi.superacaomodelo === "Classe comum com atendimento personalizado." ? (
+                            <>
+                              ( x ) Classe Comum com atendimento personalizado
+                              <br />
+                              (  ) Turma SuperAção
+                              <br />
+                              (  ) Turma SuperAção Reduzida
+                            </>
+                          ) : publi.superacaomodelo === "Turma SuperAção" ? (
+                            <>
+                              (  ) Classe Comum com atendimento personalizado
+                              <br />
+                              ( x ) Turma SuperAção
+                              <br />
+                              (  ) Turma SuperAção Reduzida
+                            </>
+                          ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
+                            <>
+                              (  ) Classe Comum com atendimento personalizado
+                              <br />
+                              (  ) Turma SuperAção
+                              <br />
+                              ( x ) Turma SuperAção Reduzida
+                            </>
+                          ) : (
+                            " " // Caso padrão se nenhum valor for igual
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="contint">
-                      Sala de recursos: {publi.saladerecursos ? "Sim" : "Não"}
+                  </div>
+                  
+                </div>
+                
+                <div className="line" style={{display:'flex', flexDirection:'column', alignItems:'flex-start'}}>
+                  <div className="lineinto">
+                    Foi aplicada a Organização Curricular específica do Programa Superação?
+                  </div>
+                      
+                      {publi.aplicacao && (
+                        <div style={{display:'flex', flexDirection:'row', width:'auto'}}>
+                          {publi.superacaomodelo === true ? (
+                            <div>
+                              ( x ) sim
+                              <br />
+                              (  ) não
+                              <br />
+                              (  ) parcialmente
+                            </div>
+                          ) : publi.superacaomodelo === false ? (
+                            <div>
+                              (  ) sim
+                              <br />
+                              (  ) não
+                              <br />
+                              ( x ) parcialmente
+                            </div>
+                          ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
+                            <div>
+                              (  ) sim
+                              <br />
+                              (  ) não
+                              <br />
+                              ( x ) parcialmente
+                            </div>
+                          ) : (
+                            " " // Caso padrão se nenhum valor for igual
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="contint">
-                      Aplicacao: {publi.aplicacao ? "Sim" : "Não"}
+
+                  <div className="line">
+                    <div className="lineintoitem">
+                      Bimestre 
                     </div>
+                    <div className="lineintoitem">
+                    Total de dias letivos:
+                    </div>
+                    <div className="lineintoitem">
+                    Total de Faltas:{publi.faltas}
+                    </div>
+                  </div>
+                
+                 
+                  <div className="line">
                   </div>
                 </div>
               </div>
