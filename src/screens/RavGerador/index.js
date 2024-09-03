@@ -405,7 +405,7 @@ const RavGerador = () => {
               <div className="contsecondcolum">
                 {resumoData && resumoData.map((item, index) => (
                   <div key={index}>
-                    Em {item.titulo}, {item.assunto} {item.avaliacao} {item.retorno}
+                  {item.retorno} {item.assunto} {item.avaliacao} 
                   </div>
                 ))}
               </div>

@@ -119,7 +119,9 @@ export default function Ravgerador() {
 
       const { data: assuntosData, error: assuntosError } = await supabase
         .from("assuntos")
-        .select("*");
+        .select("*")
+        .eq("bimestre", activeTab + 1) // Ajuste para refletir o bimestre selecionado
+        .eq("curso", curso); // Filtra pelo curso do aluno
 
       if (assuntosError) throw assuntosError;
 
@@ -136,6 +138,7 @@ export default function Ravgerador() {
       console.error('Erro ao buscar dados:', error);
     }
   };
+
 
   fetchPubli();
 }, [id]);
@@ -216,12 +219,12 @@ useEffect(() => {
 
 
 
-  const handleCheckboxChange = async (assunto, value) => {
-    const label = getCheckboxLabel(value);
-    setBimestres(prevBimestres => ({
-      ...prevBimestres,
-      [assunto]: label
-    }));
+const handleCheckboxChange = async (assunto, value) => {
+  const label = getCheckboxLabel(value);
+  setBimestres(prevBimestres => ({
+    ...prevBimestres,
+    [`bimestre${activeTab + 1}_${assunto}`]: label // Adiciona o bimestre ao key
+  }));
 
     let tableName;
     switch (label) {
@@ -646,83 +649,82 @@ useEffect(() => {
       </div>
       </div>
       </div>
-      <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
+     <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
+  <TabList>
+    <Tab>Bimestre 1</Tab>
+    <Tab>Bimestre 2</Tab>
+    <Tab>Bimestre 3</Tab>
+    <Tab>Bimestre 4</Tab>
+  </TabList>
+  {[1, 2, 3, 4].map(bimestreIndex => (
+    <TabPanel key={bimestreIndex}>
+      <Tabs>
         <TabList>
-          <Tab>Bimestre 1</Tab>
+          {disciplinas.map((disciplina, index) => (
+            <Tab key={index}>{disciplina.nome}</Tab>
+          ))}
         </TabList>
-        <TabPanel>
-          <Tabs>
-            <TabList>
-              {disciplinas.map((disciplina, index) => (
-                <Tab key={index}>{disciplina.nome}</Tab>
+
+        {disciplinas.map((disciplina, index) => (
+          <TabPanel key={index}>
+            <Tabs>
+              <TabList>
+                {assuntos[disciplina.id]?.filter(assunto => assunto.bimestre === bimestreIndex).map((assunto, assuntoIndex) => (
+                  <Tab key={assuntoIndex}>{assunto.nome}</Tab>
+                ))}
+              </TabList>
+
+              {assuntos[disciplina.id]?.filter(assunto => assunto.bimestre === bimestreIndex).map((assunto, assuntoIndex) => (
+                <TabPanel key={assuntoIndex}>
+                  <div className="form-group">
+                    <label>Avaliação </label>
+                    <div className="checkbox-group">
+                      {[1, 2, 3].map(level => (
+                        <label key={level}>
+                          <input
+                            type="radio"
+                            name={`assunto-${assuntoIndex}`}
+                            value={level}
+                            checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
+                            onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
+                          />
+                          {getCheckboxLabel(level.toString())}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {texts[assunto.nome] && (
+                    <div className="text-cards">
+                      <div className="linetitle">Selecione uma opção abaixo</div>
+                      {texts[assunto.nome]?.filter(text => text.id_assunto === assunto.id).map((text, textIndex) => (
+                          <div 
+                            key={textIndex} 
+                            className={`text-card ${selectedCards[assunto.nome]?.text === text.text ? 'selected' : ''}`} 
+                            onClick={() => handleCardSelect(assunto.nome, text.title, text.text)}
+                          >
+                            <h3>{text.titulo}</h3>
+                            <p>{text.text}</p>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  <div className="textarea-container">
+                    <div className="linetitle">Anotação adicional</div>
+                    <textarea className="textarea" placeholder="Digite aqui..." 
+                    value={annotations[assunto.nome] || ""}
+                    onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)} />
+                  </div>
+                </TabPanel>
               ))}
-            </TabList>
-
-            {disciplinas.map((disciplina, index) => (
-              <TabPanel key={index}>
-                <Tabs>
-                  <TabList>
-                    {assuntos[disciplina.id]?.map((assunto, assuntoIndex) => (
-                      <Tab key={assuntoIndex}>{assunto.nome}</Tab>
-                    ))}
-                  </TabList>
-
-                  {assuntos[disciplina.id]?.map((assunto, assuntoIndex) => (
-                    <TabPanel key={assuntoIndex}>
-                      <div className="form-group">
-                        <label>Avaliação </label>
-                        <div className="checkbox-group">
-                          {[1, 2, 3].map((level) => (
-                            <label key={level}>
-                              <input
-                                type="radio"
-                                name={`assunto-${assuntoIndex}`}
-                                value={level}
-                                checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
-                                onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
-                              />
-                              {getCheckboxLabel(level.toString())}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {texts[assunto.nome] && (
-                        <div className="text-cards">
-                          <div className="linetitle">Selecione uma opção abaixo</div>
-                          {texts[assunto.nome].map((text, textIndex) => (
-                            <div 
-                              key={textIndex} 
-                              className={`text-card ${selectedCards[assunto.nome]?.text === text.text ? 'selected' : ''}`} 
-                              onClick={() => handleCardSelect(assunto.nome, text.title, text.text)}
-                            >
-                              <h3>{text.titulo}</h3>
-                              <p>{text.text}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                        <div className="textarea-container">
-                          <div className="linetitle">Anotação adicional</div>
-                          <textarea className="textarea" placeholder="Digite aqui..." 
-                          value={annotations[assunto.nome] || ""}
-                          onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)} />
-                        </div>
-                        
-                    </TabPanel>
-                  ))}
-                   {filteredItems?.map((item) => (
-      <div key={item.id}>
-        {/* Render the item details */}
-      </div>
-    ))}
-                </Tabs>
-              </TabPanel>
-            ))}
-           
-          </Tabs>
-        </TabPanel>
+            </Tabs>
+          </TabPanel>
+        ))}
       </Tabs>
+    </TabPanel>
+  ))}
+</Tabs>
+
       <div className="form-group">
         <button onClick={handleUpdate}>Salvar</button>
       </div>
