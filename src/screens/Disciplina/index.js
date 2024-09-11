@@ -102,17 +102,87 @@ const Disciplina = () => {
   };
 
   const handleDelete = async (id) => {
-    const { error } = await supabase.from('disciplinas').delete().eq('id', id);
-    if (error) {
-      setSnackbarMessage(`Erro ao excluir disciplina: ${error.message}`);
+    try {
+      // Passo 1: Verificar se a disciplina está associada em 'resumo_1'
+      const { data: resumo, error: resumoError } = await supabase
+        .from('resumo_1')
+        .select('id')
+        .eq('disciplina_id', id);
+  
+      if (resumoError) {
+        setSnackbarMessage(`Erro ao verificar resumo_1: ${resumoError.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+  
+      // Passo 2: Verificar se a disciplina está associada em 'retornomoderado'
+      const { data: retornoModerado, error: retornoModeradoError } = await supabase
+        .from('retornomoderado')
+        .select('id')
+        .eq('id_disciplina', id);
+  
+      if (retornoModeradoError) {
+        setSnackbarMessage(`Erro ao verificar retornomoderado: ${retornoModeradoError.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+  
+      // Passo 3: Verificar se a disciplina está associada em 'retornonegativo'
+      const { data: retornoNegativo, error: retornoNegativoError } = await supabase
+        .from('retornonegativo')
+        .select('id')
+        .eq('id_disciplina', id);
+  
+      if (retornoNegativoError) {
+        setSnackbarMessage(`Erro ao verificar retornonegativo: ${retornoNegativoError.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+  
+      // Passo 4: Verificar se a disciplina está associada em 'retornopositivo'
+      const { data: retornoPositivo, error: retornoPositivoError } = await supabase
+        .from('retornopositivo')
+        .select('id')
+        .eq('id_disciplina', id);
+  
+      if (retornoPositivoError) {
+        setSnackbarMessage(`Erro ao verificar retornopositivo: ${retornoPositivoError.message}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+  
+      // Se a disciplina estiver associada a qualquer uma das tabelas, impedir a exclusão
+      if (resumo.length > 0 || retornoModerado.length > 0 || retornoNegativo.length > 0 || retornoPositivo.length > 0) {
+        setSnackbarMessage('Não é possível excluir a disciplina. Ela está associada a registros existentes.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+  
+      // Passo 5: Excluir a disciplina se não houver associações
+      const { error: deleteError } = await supabase.from('disciplinas').delete().eq('id', id);
+      if (deleteError) {
+        setSnackbarMessage(`Erro ao excluir disciplina: ${deleteError.message}`);
+        setSnackbarSeverity('error');
+      } else {
+        setSnackbarMessage('Disciplina excluída com sucesso!');
+        setSnackbarSeverity('success');
+        fetchDisciplinas();
+      }
+      setSnackbarOpen(true);
+  
+    } catch (error) {
+      console.error('Erro ao excluir a disciplina:', error);
+      setSnackbarMessage(`Erro inesperado: ${error.message}`);
       setSnackbarSeverity('error');
-    } else {
-      setSnackbarMessage('Disciplina excluída com sucesso!');
-      setSnackbarSeverity('success');
-      fetchDisciplinas();
+      setSnackbarOpen(true);
     }
-    setSnackbarOpen(true);
   };
+  
 
   const checkIfExists = async (table, column, value) => {
     const { data, error } = await supabase.from(table).select(`${column}`).eq(column, value);
@@ -140,6 +210,18 @@ const Disciplina = () => {
             value={nomeDisciplina}
             onChange={(e) => setNomeDisciplina(e.target.value)}
           />
+
+          <div> {snackbarMessage}</div>
+
+           <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
         </div>
         <div className='btninp'>
           <button
@@ -185,15 +267,7 @@ const Disciplina = () => {
           </tbody>
         </table>
       </div>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+     
     </div>
   );
 };

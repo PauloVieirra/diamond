@@ -24,16 +24,28 @@ const Assuntos = () => {
   }, [searchQuery]);
 
   const fetchAssuntos = async () => {
-    const { data, error } = await supabase.from('assuntos').select('id, nome, disciplina_id, bimestre');
+    // Buscar todos os assuntos
+    const { data, error } = await supabase.from('assuntos').select('id, nome, disciplina_id, bimestre, curso');
+    
     if (error) {
       showSnack(`Erro ao buscar assuntos: ${error.message}`, 'error');
-    } else {
-      const filteredAssuntos = data.filter(assunto =>
-        assunto.nome.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setAssuntos(filteredAssuntos);
+      return;
     }
+  
+    // Filtrar os dados com base na pesquisa
+    const filteredAssuntos = data.filter(assunto => {
+      const nomeMatch = assunto.nome?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+      const bimestreMatch = assunto.bimestre?.toString().includes(searchQuery) || false;
+      const cursoMatch = assunto.curso?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+      const disciplinaMatch = disciplinas.find(d => d.id === assunto.disciplina_id)?.nome?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+    
+      return nomeMatch || bimestreMatch || cursoMatch || disciplinaMatch;
+    });
+    
+  
+    setAssuntos(filteredAssuntos);
   };
+  
   
 
   const fetchDisciplinas = async () => {
@@ -50,12 +62,28 @@ const Assuntos = () => {
       showSnack('Assunto já cadastrado.', 'warning');
       return;
     }
+  
+    // Verificar se cada campo está preenchido e fornecer mensagens específicas
+  if (!nomeAssunto) {
+    showSnack('Por favor, preencha o nome do assunto.', 'warning');
+    return;
+  }
 
-    if (!disciplinaSelecionada || !bimestreSelecionado) {
-      showSnack('Por favor, selecione uma disciplina e um bimestre.', 'warning');
-      return;
-    }
+  if (!disciplinaSelecionada) {
+    showSnack('Por favor, selecione uma disciplina.', 'warning');
+    return;
+  }
 
+  if (!bimestreSelecionado) {
+    showSnack('Por favor, selecione um bimestre.', 'warning');
+    return;
+  }
+
+  if (!cursoSelecionado) {
+    showSnack('Por favor, selecione um curso.', 'warning');
+    return;
+  }
+  
     if (editingId) {
       const { error } = await supabase
         .from('assuntos')
@@ -63,10 +91,10 @@ const Assuntos = () => {
           nome: nomeAssunto,
           disciplina_id: disciplinaSelecionada,
           bimestre: bimestreSelecionado,
-          curso: cursoSelecionado,
+          curso: cursoSelecionado,  // Adicionando curso
         })
         .eq('id', editingId);
-
+  
       if (error) {
         showSnack(`Erro ao atualizar assunto: ${error.message}`, 'error');
       } else {
@@ -79,7 +107,7 @@ const Assuntos = () => {
           nome: nomeAssunto,
           disciplina_id: disciplinaSelecionada,
           bimestre: bimestreSelecionado,
-          curso: cursoSelecionado,
+          curso: cursoSelecionado,  // Adicionando curso
         },
       ]);
       if (error) {
@@ -88,7 +116,7 @@ const Assuntos = () => {
         showSnack('Assunto cadastrado com sucesso!', 'success');
       }
     }
-
+  
     // Limpar os campos após o cadastro
     setNomeAssunto('');
     setDisciplinaSelecionada('');
@@ -96,25 +124,69 @@ const Assuntos = () => {
     setCursoSelecionado('');
     fetchAssuntos();
   };
+  
 
-  const handleEdit = (id) => {
+  const handleEdit = async (id) => {
+    // Verificar se o id do assunto está presente na coluna assunto_id da tabela resumo_1
+    const { data, error: checkError } = await supabase
+      .from('resumo_1')
+      .select('assunto_id')
+      .eq('assunto_id', id);
+  
+    if (checkError) {
+      alert(`Erro ao verificar assunto: ${checkError.message}`);
+      return;
+    }
+  
+    // Se o assunto estiver em uso, mostrar mensagem e não permitir a edição
+    if (data.length > 0) {
+      alert('Não é possível editar este assunto, pois ele está em uso.');
+      return;
+    }
+  
+    // Se o assunto não estiver em uso, permitir a edição
     const assunto = assuntos.find((a) => a.id === id);
-    setNomeAssunto(assunto.nome);
-    setDisciplinaSelecionada(assunto.disciplina_id);
-    setBimestreSelecionado(assunto.bimestre);
-    setCursoSelecionado(assunto.curso);
-    setEditingId(id);
+    if (assunto) {
+      setNomeAssunto(assunto.nome);
+      setDisciplinaSelecionada(assunto.disciplina_id);
+      setBimestreSelecionado(assunto.bimestre);
+      setCursoSelecionado(assunto.curso);
+      setEditingId(id);
+    } else {
+      alert('Assunto não encontrado.');
+    }
   };
+  
 
   const handleDelete = async (id) => {
+    // Verificar se o id do assunto está presente na coluna assunto_id da tabela resumo_1
+    const { data, error: checkError } = await supabase
+      .from('resumo_1')
+      .select('assunto_id')
+      .eq('assunto_id', id);
+  
+    if (checkError) {
+      alert(`Erro ao verificar assunto: ${checkError.message}`);
+      return;
+    }
+  
+    // Se o assunto estiver em uso, mostrar mensagem e não permitir a exclusão
+    if (data.length > 0) {
+      alert('Não é possível excluir este assunto, pois ele está em uso em um relatório.');
+      return;
+    }
+  
+    // Se o assunto não estiver em uso, proceder com a exclusão
     const { error } = await supabase.from('assuntos').delete().eq('id', id);
     if (error) {
-      showSnack(`Erro ao excluir assunto: ${error.message}`, 'error');
+      alert(`Erro ao excluir assunto: ${error.message}`);
     } else {
-      showSnack('Assunto excluído com sucesso!', 'success');
+      alert('Assunto excluído com sucesso!');
       fetchAssuntos();
     }
   };
+  
+  
 
   const checkIfExists = async (table, column, value) => {
     const { data, error } = await supabase.from(table).select(`${column}`).eq(column, value);
@@ -209,46 +281,53 @@ const Assuntos = () => {
               {editingId ? 'Atualizar' : 'Cadastrar'}
             </button>
           </div>
-        </div>
+          
+        </div><div>{snack.message}</div>
         <div><div>
         <input
-          type="text"
-          placeholder="Buscar por nome"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{width:'300px'}}
-        />
+              type="text"
+              placeholder="Buscar por nome, série, bimestre, disciplina ou curso"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                fetchAssuntos();  // Atualizar a pesquisa sempre que o valor mudar
+              }}
+              style={{ width: '300px' }}
+            />
       </div>
       </div>
         <h2>Lista de Assuntos</h2>
         <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Disciplina</th>
-              <th>Bimestre</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assuntos.map((assunto) => {
-              const disciplina = disciplinas.find((d) => d.id === assunto.disciplina_id);
-              return (
-                <tr key={assunto.id}>
-                  <td>{assunto.nome}</td>
-                  <td>{disciplina ? disciplina.nome : 'Disciplina não encontrada'}</td>
-                  <td>{assunto.bimestre}</td>
-                  <td>
-                    <div className='contbtns'> 
-                      <button className='btn_secondary' onClick={() => handleEdit(assunto.id)}>Editar</button>
-                      <button className='btnDell' onClick={() => handleDelete(assunto.id)}>Excluir</button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Disciplina</th>
+      <th>Bimestre</th>
+      <th>Série</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {assuntos.map((assunto) => {
+      const disciplina = disciplinas.find((d) => d.id === assunto.disciplina_id);
+      return (
+        <tr key={assunto.id}>
+          <td>{assunto.nome}</td>
+          <td>{disciplina ? disciplina.nome : 'Disciplina não encontrada'}</td>
+          <td>{assunto.bimestre}</td>
+          <td>{assunto.curso ? assunto.curso : 'Não disponível'}</td> {/* Exibir uma mensagem padrão se curso não estiver definido */}
+          <td>
+            <div className='contbtns'> 
+              <button className='btn_secondary' onClick={() => handleEdit(assunto.id)}>Editar</button>
+              <button className='btnDell' onClick={() => handleDelete(assunto.id)}>Excluir</button>
+            </div>
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
+
       </div>
       <Snackbar
         open={snack.open}
