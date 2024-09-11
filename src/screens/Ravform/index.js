@@ -38,6 +38,7 @@ export default function Ravgerador() {
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [professorName, setProfessorName] = useState("");
+  const [professorCourse, setProfessorCourse] = useState('');
   console.log(professorName);
 
   const [bloco, setBloco] = useState(null);
@@ -55,25 +56,26 @@ export default function Ravgerador() {
   };
 
   useEffect(() => {
-    const fetchProfessorName = async () => {
+    const fetchProfessorData = async () => {
       try {
         // Certifique-se de que user.uid é um texto que corresponde ao campo uid na tabela
-        const { data: professorData, error: professorError } = await supabase 
-          .from("professores")
-          .select("nome")  // Nome da coluna que contém o nome do professor
-          .eq("uid", user.id)  // Usando user.id como uid para buscar na coluna uid
+        const { data: professorData, error: professorError } = await supabase
+          .from('professores')
+          .select('nome, Curso')  // Nome das colunas que contêm o nome e o curso do professor
+          .eq('uid', user.id)  // Usando user.id como uid para buscar na coluna uid
           .single();  // Use single() para garantir que você recebe apenas um resultado
   
         if (professorError) throw professorError;
   
-        setProfessorName(professorData?.nome);  // Atualize o estado com o nome do professor
+        setProfessorName(professorData?.nome || '');  // Atualize o estado com o nome do professor
+        setProfessorCourse(professorData?.Curso || ''); // Atualize o estado com o curso do professor
       } catch (error) {
-        console.error('Erro ao buscar nome do professor:', error);
+        console.error('Erro ao buscar dados do professor:', error);
       }
     };
   
     if (user.id) {  // Verifique se user.id está disponível antes de fazer a consulta
-      fetchProfessorName();
+      fetchProfessorData();
     }
   }, [user.id]);  // Refaça a busca sempre que user.id mudar
   
@@ -649,7 +651,7 @@ const handleCheckboxChange = async (assunto, value) => {
       </div>
       </div>
       </div>
-     <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
+      <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
   <TabList>
     <Tab>Bimestre 1</Tab>
     <Tab>Bimestre 2</Tab>
@@ -660,70 +662,92 @@ const handleCheckboxChange = async (assunto, value) => {
     <TabPanel key={bimestreIndex}>
       <Tabs>
         <TabList>
-          {disciplinas.map((disciplina, index) => (
-            <Tab key={index}>{disciplina.nome}</Tab>
-          ))}
+          {disciplinas
+            .filter(disciplina => 
+              // Verifica se há algum assunto para o bimestre atual que tem o mesmo curso do professor
+              assuntos[disciplina.id]?.some(assunto => 
+                assunto.bimestre === bimestreIndex && (assunto.curso || '').trim() === (professorCourse || '').trim()
+              )
+            )
+            .map((disciplina, index) => (
+              <Tab key={index}>{disciplina.nome}</Tab>
+            ))}
         </TabList>
 
-        {disciplinas.map((disciplina, index) => (
-          <TabPanel key={index}>
-            <Tabs>
-              <TabList>
-                {assuntos[disciplina.id]?.filter(assunto => assunto.bimestre === bimestreIndex).map((assunto, assuntoIndex) => (
-                  <Tab key={assuntoIndex}>{assunto.nome}</Tab>
-                ))}
-              </TabList>
+        {disciplinas
+          .filter(disciplina => 
+            // Verifica se há algum assunto para o bimestre atual que tem o mesmo curso do professor
+            assuntos[disciplina.id]?.some(assunto => 
+              assunto.bimestre === bimestreIndex && (assunto.curso || '').trim() === (professorCourse || '').trim()
+            )
+          )
+          .map((disciplina, index) => (
+            <TabPanel key={index}>
+              <Tabs>
+                <TabList>
+                  {assuntos[disciplina.id]
+                    ?.filter(assunto => assunto.bimestre === bimestreIndex && (assunto.curso || '').trim() === (professorCourse || '').trim())
+                    .map((assunto, assuntoIndex) => (
+                      <Tab key={assuntoIndex}>{assunto.nome}</Tab>
+                    ))}
+                </TabList>
 
-              {assuntos[disciplina.id]?.filter(assunto => assunto.bimestre === bimestreIndex).map((assunto, assuntoIndex) => (
-                <TabPanel key={assuntoIndex}>
-                  <div className="form-group">
-                    <label>Avaliação </label>
-                    <div className="checkbox-group">
-                      {[1, 2, 3].map(level => (
-                        <label key={level}>
-                          <input
-                            type="radio"
-                            name={`assunto-${assuntoIndex}`}
-                            value={level}
-                            checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
-                            onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
-                          />
-                          {getCheckboxLabel(level.toString())}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {texts[assunto.nome] && (
-                    <div className="text-cards">
-                      <div className="linetitle">Selecione uma opção abaixo</div>
-                      {texts[assunto.nome]?.filter(text => text.id_assunto === assunto.id).map((text, textIndex) => (
-                          <div 
-                            key={textIndex} 
-                            className={`text-card ${selectedCards[assunto.nome]?.text === text.text ? 'selected' : ''}`} 
-                            onClick={() => handleCardSelect(assunto.nome, text.title, text.text)}
-                          >
-                            <h3>{text.titulo}</h3>
-                            <p>{text.text}</p>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                  <div className="textarea-container">
-                    <div className="linetitle">Anotação adicional</div>
-                    <textarea className="textarea" placeholder="Digite aqui..." 
-                    value={annotations[assunto.nome] || ""}
-                    onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)} />
-                  </div>
-                </TabPanel>
-              ))}
-            </Tabs>
-          </TabPanel>
-        ))}
+                {assuntos[disciplina.id]
+                  ?.filter(assunto => assunto.bimestre === bimestreIndex && (assunto.curso || '').trim() === (professorCourse || '').trim())
+                  .map((assunto, assuntoIndex) => (
+                    <TabPanel key={assuntoIndex}>
+                      <div className="form-group">
+                        <label>Avaliação </label>
+                        <div className="checkbox-group">
+                          {[1, 2, 3].map(level => (
+                            <label key={level}>
+                              <input
+                                type="radio"
+                                name={`assunto-${assuntoIndex}`}
+                                value={level}
+                                checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
+                                onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
+                              />
+                              {getCheckboxLabel(level.toString())}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {texts[assunto.nome] && (
+                        <div className="text-cards">
+                          <div className="linetitle">Selecione uma opção abaixo</div>
+                          {texts[assunto.nome]?.filter(text => text.id_assunto === assunto.id).map((text, textIndex) => (
+                            <div
+                              key={textIndex}
+                              className={`text-card ${selectedCards[assunto.nome]?.text === text.text ? 'selected' : ''}`}
+                              onClick={() => handleCardSelect(assunto.nome, text.title, text.text)}
+                            >
+                              <h3>{text.titulo}</h3>
+                              <p>{text.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="textarea-container">
+                        <div className="linetitle">Anotação adicional</div>
+                        <textarea
+                          className="textarea"
+                          placeholder="Digite aqui..."
+                          value={annotations[assunto.nome] || ""}
+                          onChange={(e) => handleAnnotationChange(assunto.nome, e.target.value)}
+                        />
+                      </div>
+                    </TabPanel>
+                  ))}
+              </Tabs>
+            </TabPanel>
+          ))}
       </Tabs>
     </TabPanel>
   ))}
 </Tabs>
+
 
       <div className="form-group">
         <button onClick={handleUpdate}>Salvar</button>
