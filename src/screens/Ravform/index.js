@@ -23,6 +23,7 @@ export default function Ravgerador() {
   const [turma, setTurma] = useState("");
   const [curso, setCurso] = useState(""); 
   const [faltas, setFaltas] = useState(""); 
+  const [dias, setDias] = useState(false);
   const [adequacao, setAdequacao] = useState(false); 
   const [temporalidade, setTemporalidade] = useState(false); 
   const [saladerecursos, setSaladerecursos ] = useState (false);
@@ -30,6 +31,12 @@ export default function Ravgerador() {
   const [superacaomodelo, setSuperacaomodelo ] = useState (" ");
   const [superacaodefinicao, setSuperacaodefinicao] = useState("");
   const [aplicacao, setAplicacao] = useState(false);
+  const [progressao, setProgressao] = useState(false);
+  const [aprovado, setAprovado] = useState(false);
+  const [avanco, setAvanco] = useState(false);
+  const [reprovado, setReprovado] = useState(false);
+  const [abandono, setAbandono] = useState(false);
+  const [cursando, setCursando] = useState(false);
   const [options, setOptions] = useState([]); // Definindo o estado options
   const [selectedDisciplina, setSelectedDisciplina] = useState(null);
   const [selectedAssunto, setSelectedAssunto] = useState(null);
@@ -100,6 +107,7 @@ export default function Ravgerador() {
       setSerie(alunoData.serie);
       setIstea(alunoData.istea); 
       setFaltas(alunoData.faltas);
+      setDias(alunoData.dias)
       setTurno(alunoData.Turno);
       setCurso(alunoData.Curso);
       setTurma(alunoData.Turma);
@@ -110,6 +118,12 @@ export default function Ravgerador() {
       setSuperacao(alunoData.superacao);
       setSuperacaomodelo(alunoData.superacaomodelo);
       setSuperacaodefinicao(alunoData.superacaodefinicao);
+      setProgressao(alunoData.progressao);
+      setAprovado(alunoData.aprovado);
+      setAvanco(alunoData.avanco);
+      setReprovado(alunoData.reprovado);
+      setAbandono(alunoData.abandono);
+      setCursando(alunoData.cursando);
       
       const { data: disciplinasData, error: disciplinasError } = await supabase
         .from("disciplinas")
@@ -419,6 +433,7 @@ const handleCheckboxChange = async (assunto, value) => {
     const alunoData = {
       istea,
       faltas,
+      dias,
       name,
       serie,
       Bloco: bloco,
@@ -431,6 +446,12 @@ const handleCheckboxChange = async (assunto, value) => {
       superacao,
       superacaomodelo,
       superacaodefinicao,
+      progressao,
+      aprovado,
+      avanco,
+      reprovado,
+      abandono,
+      cursando,
     
     };
   
@@ -482,11 +503,12 @@ const handleCheckboxChange = async (assunto, value) => {
         <div className="containermain__header">
            <h2>Responder RAV</h2>
         </div>
-        <div className="line">
+        <div className="header">
          <div className="contdatatop">Ano letivo: {anoAtual}</div>
+         <div className="contdatatop">Professor: {professorName}</div>
          <div className="contdatatop">Coordenação Regional de Ensino: {publi.Orgao}</div>
          <div className="contdatatop">Unidade Escolar: {publi.Instituicao}</div>
-         <div className="contdatatop">Professor: {professorName}</div>
+        
         </div>
       <div className="cont-name" >
         <label>Estudante</label>
@@ -620,37 +642,103 @@ const handleCheckboxChange = async (assunto, value) => {
       </div>
 
       <div className="line">
-      <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Turno</div>
+      <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Turno
         <input
           type="text"
           value={turno}
           onChange={(e) => setTurno(e.target.value)}
           style={{width:"100px", height:"28px"}}
         />
-          <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Serie</div>
+        </div>
+          <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10  }}>Serie
         <input
           type="text"
           value={curso}
           onChange={(e) => setCurso(e.target.value)}
           style={{width:"100px", height:"28px"}}
         />
-        <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Turma</div>
+        </div>
+         <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10  }}>Turma
         <input
           type="text"
           value={turma}
           onChange={(e) => setTurma(e.target.value)}
           style={{width:"100px", height:"28px"}}
         />
-          <div style={{display:'flex', alignItems:'center',width:"100px", height:"48px"}}>Faltas</div>
+        </div>
+          <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10  }}>Faltas
         <input
           type="text"
           value={faltas}
           onChange={(e) => setFaltas(e.target.value)}
           style={{width:"100px", height:"28px"}}
         />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10  }}>Dias letivos
+        <input
+          type="text"
+          value={dias}
+          onChange={(e) => setDias(e.target.value)}
+          style={{width:"100px", height:"28px"}}
+        />
+        </div>
       </div>
       </div>
       </div>
+    { activeTab === 3 &&
+    <div className="line">
+          <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Progressão 
+        <input
+          type="checkbox"
+          value={progressao}
+          onChange={(e) => setProgressao(e.target.value)}
+         style={{width:"26px", height:'26px'}}
+        />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Aprovado 
+        <input
+          type="checkbox"
+          value={aprovado}
+          onChange={(e) => setAprovado(e.target.value)}
+          style={{width:"26px", height:'26px'}}
+        />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Fluxo 
+        <input
+          type="checkbox"
+          value={avanco}
+          onChange={(e) => setAvanco(e.target.value)}
+          style={{width:"26px", height:'26px'}}
+        />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Reprovado
+        <input
+          type="checkbox"
+          value={reprovado}
+          onChange={(e) => setReprovado(e.target.value)}
+          style={{width:"26px", height:'26px'}}
+        />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Abandono
+        <input
+          type="checkbox"
+          value={abandono}
+          onChange={(e) => setAbandono(e.target.value)}
+          style={{width:"26px", height:'26px'}}
+        />
+        </div>
+        <div style={{display:'flex', alignItems:'center',width:"auto", height:"48px", paddingLeft:20,gap:10 }}>Cursando
+
+        <input
+          type="checkbox"
+          value={cursando}
+          onChange={(e) => setCursando(e.target.value)}
+          style={{width:"26px", height:'26px'}}
+        />
+        </div>
+    </div>
+    }
+      
       <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)} className="tab">
   <TabList>
     <Tab>Bimestre 1</Tab>
@@ -749,8 +837,8 @@ const handleCheckboxChange = async (assunto, value) => {
 </Tabs>
 
 
-      <div className="form-group">
-        <button onClick={handleUpdate}>Salvar</button>
+      <div className="linebtn">
+        <button onClick={handleUpdate} className="btnPrimary">Salvar</button>
       </div>
       </div>
       
