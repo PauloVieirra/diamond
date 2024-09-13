@@ -167,6 +167,7 @@ select{
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 200px;
   height: 42px;
   border-radius: 8px;
   background-color: #335c81;
@@ -182,17 +183,25 @@ select{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao hover */
 }
 
-.btn_secondary{
+.btn_secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  max-width: 100px;
+  max-width: 200px;
   height: 42px;
-  background-color: #b6b6b6a9;
-  border-color: rgba(83, 83, 83, 0.774);
+  border-radius: 8px;
+  background-color: #eeeeee;
+  color: rgb(68, 68, 68);
   font-size: 16px;
-  color: #414142;
+  margin-top: 30px;
+  transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Transição suave para background-color e box-shadow */
+  box-shadow: inset 0 0 0 1px #000; /* Adiciona borda interna com box-shadow */
+  border: none; /* Remove a borda externa, se você quiser apenas a borda interna */
 }
+
 .btn_secondary:hover{
-  background-color: #d3d3d3a9;
+  background-color: #ffffffa9;
 }
 
 .btn_terciary{

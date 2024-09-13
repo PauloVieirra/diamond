@@ -18,27 +18,52 @@ const RavGerador = () => {
   const [dateTime, setDateTime] = useState({ day: '', month: '', year: '' });
   const [city, setCity] = useState('');
   const [professorName, setProfessorName] = useState("");
-  const {user } = useAuth();
+  const { user, nomeaux, isfisc } = useAuth();
   const anoAtual = new Date().getFullYear();
+
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [selectedBimestre, setSelectedBimestre] = useState('0'); // Valor padrão
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  const handleBimestreChange = (e) => setSelectedBimestre(e.target.value);
+
+  const fetchBimestreData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from(`resumo_${selectedBimestre}`)
+        .select("avaliacao, rendimento, retorno, disciplina_id, assunto_id")
+        .eq("aluno_id", id);
+
+      if (error) throw error;
+      setResumoData(data);
+
+
+
+    } catch (error) {
+      console.error("Erro ao buscar dados do bimestre:", error);
+    }
+  };
+
 
   useEffect(() => {
     const fetchProfessorName = async () => {
       try {
         // Certifique-se de que user.uid é um texto que corresponde ao campo uid na tabela
-        const { data: professorData, error: professorError } = await supabase 
+        const { data: professorData, error: professorError } = await supabase
           .from("professores")
           .select("nome")  // Nome da coluna que contém o nome do professor
           .eq("uid", user.id)  // Usando user.id como uid para buscar na coluna uid
           .single();  // Use single() para garantir que você recebe apenas um resultado
-  
+
         if (professorError) throw professorError;
-  
+
         setProfessorName(professorData?.nome);  // Atualize o estado com o nome do professor
       } catch (error) {
         console.error('Erro ao buscar nome do professor:', error);
       }
     };
-  
+
     if (user.id) {  // Verifique se user.id está disponível antes de fazer a consulta
       fetchProfessorName();
     }
@@ -85,6 +110,8 @@ const RavGerador = () => {
 
         if (alunoError) throw alunoError;
         setPubli(alunoData);
+
+        await fetchBimestreData();
 
         const { data: bimestreData, error: bimestreError } = await supabase
           .from("bimestre_1")
@@ -138,17 +165,17 @@ const RavGerador = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, selectedBimestre]);
 
   const generatePdf = async () => {
     // Seleciona o elemento com a classe "container" para captura
     const content = document.querySelector(".container");
-  
+
     // Adiciona uma margem inferior generosa para garantir que todo o conteúdo seja capturado
     const marginBottom = 200; // Margem inferior em pixels
     content.style.position = 'relative';
     content.style.paddingBottom = `${marginBottom}px`; // Adiciona padding inferior
-  
+
     // Captura o conteúdo completo com html2canvas
     const canvas = await html2canvas(content, {
       scale: 2,  // Aumenta a escala para melhorar a qualidade da imagem no PDF
@@ -158,21 +185,21 @@ const RavGerador = () => {
       windowWidth: content.scrollWidth,
       windowHeight: content.scrollHeight + marginBottom, // Adiciona a margem à altura da janela
     });
-  
+
     const imgData = canvas.toDataURL("image/png");
     const pdfDoc = await PDFDocument.create();
-  
+
     // Define a largura A4 padrão em pontos
-    const pageWidth = 595.28; 
+    const pageWidth = 595.28;
     const aspectRatio = canvas.width / canvas.height;
-  
+
     // Calcula a altura da página para manter a proporção da imagem
     const scaledWidth = pageWidth;
     const scaledHeight = scaledWidth / aspectRatio;
-  
+
     // Cria uma nova página com altura ajustada ao conteúdo
     const page = pdfDoc.addPage([pageWidth, scaledHeight]);
-  
+
     // Insere a imagem na página com a altura ajustada
     const img = await pdfDoc.embedPng(imgData);
     page.drawImage(img, {
@@ -181,7 +208,7 @@ const RavGerador = () => {
       width: scaledWidth,
       height: scaledHeight,
     });
-  
+
     // Gera e baixa o PDF
     const pdfBytes = await pdfDoc.save();
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
@@ -190,24 +217,50 @@ const RavGerador = () => {
     link.href = url;
     link.download = `relatorio_${id}.pdf`;
     link.click();
-  
+
     // Remove a margem inferior temporária
     content.style.paddingBottom = '';  // Remove o padding inferior
     content.style.position = '';       // Restaura a posição original
   };
-  
-  
-  
-  
+
+  const incrementBimestre = () => {
+    setSelectedBimestre(prevBimestre => prevBimestre + 1);
+  };
+
+
+
+
 
   return (
     <div className="contgerar">
-      <div> 
-      <button onClick={generatePdf}>Gerar PDF</button> {/* Botão no topo */}
+      <div style={{display:'flex',width:'100%', alignItems:'center', justifyContent:'center', gap:20, margin:'20px'}}>
+        <div onClick={generatePdf} className="btnPrimary" >Gerar PDF</div> {/* Botão no topo */}
+        <div onClick={handleOpenModal} className="btn_secondary">Alterar Bimestre</div>
       </div>
+      
+      
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Selecionar Bimestre</h2>
+            <select value={selectedBimestre} onChange={handleBimestreChange}>
+              <option value="0">1º Bimestre</option>
+              <option value="1">2º Bimestre</option>
+              <option value="2">3º Bimestre</option>
+              <option value="3">4º Bimestre</option>
+            </select>
+            <div onClick={() => {
+              fetchBimestreData();
+              handleCloseModal();
+            }} className="btnmodal">Confirmar</div>
+            <div onClick={handleCloseModal} className="btnmodalclose">X</div>
+          </div>
+        </div>
+      )}
+
       {publi ? (
         <div className="container">
-        
+
           <div className="conttop">
             <div className="contimg"><img className="img" alt="" src="../images/logogdf.png" /></div>
             <div className="titletop"> {publi.Orgao} </div>
@@ -228,170 +281,189 @@ const RavGerador = () => {
               <div className="contcolumm">
                 <div className="contlinestable">
                   <div className="line">
-                   <div className="lineinto"> Ano Letivo:  {anoAtual} </div>
+                    <div className="lineinto"> Ano Letivo:  {anoAtual} </div>
                   </div>
                   <div className="line">
-                  <div className="lineinto"> Coordenação Regional de Ensino: {publi.CRE} </div>
+                    <div className="lineinto"> Coordenação Regional de Ensino: {publi.CRE} </div>
                   </div>
                   <div className="line">
-                  <div className="lineinto">  Unidade Escolar: {publi.Instituicao} </div>
+                    <div className="lineinto">  Unidade Escolar: {publi.Instituicao} </div>
                   </div>
                   <div className="line">
-                  <div className="lineinto">
-                    Bloco: {" "}
-                          {publi.bloco === true
-                            ? "1º Bloco ( ) 2º Bloco (x)"
-                            : "1º Bloco (x) 2º Bloco ( )"}
-                          <br />
-                   </div>
-                  </div>
-                  <div className="line">
-                  <div className="lineintoitem">  Ano: {publi.Curso} </div> 
-                  <div className="lineintoitem">  Turma: {publi.Turma} </div>
-                  <div className="lineinto">
-                      Turno: {" "}
-                      {publi.Turno === " Matutino" 
-                        ? "( x ) Matutino  ( ) Vespertino  ( ) Integral"
-                        : publi.Turno === " Vespertino"
-                        ? "( ) Matutino  ( x ) Vespertino  ( ) Integral"
-                        : publi.Turno === " Integral"
-                        ? "( ) Matutino  ( ) Vespertino  ( x ) Integral"
-                        : "( ) Matutino  ( ) Vespertino  ( ) Integral" // Caso padrão se nenhum valor for igual
-                      }
+                    <div className="lineinto">
+                      Bloco: {" "}
+                      {publi.bloco === true
+                        ? "1º Bloco ( ) 2º Bloco (x)"
+                        : "1º Bloco (x) 2º Bloco ( )"}
                       <br />
                     </div>
                   </div>
                   <div className="line">
-                   <div className="lineinto">Professor(a) regente da turma: {professorName}</div> 
-                  </div>
-                  <div className="line">
-                   <div className="lineinto">Professor(a)</div> 
-                  </div>
-                  <div className="line">
-                   <div className="lineinto">Professor(a)</div> 
-                  </div>
-                  <div className="line">
-                  <div className="lineinto">Estudante: {publi.name}</div>
-                  </div>
-                  <div className="line">
-                    <div className="lineinto"> 
-                  Apresenta Deficiência ou TEA?: {" "}
-                          {publi.isTea === true
-                            ? "(  ) não ( x ) sim"
-                            : "( x ) não (  ) sim"}
-                          <br />
-                    </div>      
-                   </div>
-                   <div className="line">
-                    <div className="lineinto"> 
-                    Houve adequação curricular?: {" "}
-                          {publi.adequacao === true
-                            ? "(  ) não ( x ) sim"
-                            : "( x ) não (  ) sim"}
-                          <br />
-                    </div>      
-                   </div>
-                   <div className="line">
-                    <div className="lineinto"> 
-                    Estudante indicado para temporalidade?: {" "}
-                          {publi.adequacao === true
-                            ? "(  ) não ( x ) sim"
-                            : "( x ) não (  ) sim"}
-                          <br />
-                    </div>      
-                   </div>
-                   <div className="line">
-                  <div className="lineinto">
-                    Estudante do Programa SuperAção "setado" no Sistema de Gestão i-Educar?: {" "}
-                    {publi.superacao
-                      ? "(  ) não ( x ) sim"
-                      : "( x ) não (  ) sim"}
-                    <br />
+                    <div className="lineintoitem">  Ano: {publi.Curso} </div>
+                    <div className="lineintoitem">  Turma: {publi.Turma} </div>
                     <div className="lineinto">
-                      
-                      {publi.superacao === true && (
-                        <div className="lineclean">
-                          {publi.superacaomodelo === "Classe comum com atendimento personalizado." ? (
-                            <>
-                              ( x ) Classe Comum com atendimento personalizado
-                              <br />
-                              (  ) Turma SuperAção
-                              <br />
-                              (  ) Turma SuperAção Reduzida
-                            </>
-                          ) : publi.superacaomodelo === "Turma SuperAção" ? (
-                            <>
-                              (  ) Classe Comum com atendimento personalizado
-                              <br />
-                              ( x ) Turma SuperAção
-                              <br />
-                              (  ) Turma SuperAção Reduzida
-                            </>
-                          ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
-                            <>
-                              (  ) Classe Comum com atendimento personalizado
-                              <br />
-                              (  ) Turma SuperAção
-                              <br />
-                              ( x ) Turma SuperAção Reduzida
-                            </>
-                          ) : (
-                            " " // Caso padrão se nenhum valor for igual
-                          )}
-                        </div>
-                      )}
+                      Turno: {" "}
+                      {publi.Turno === " Matutino"
+                        ? "( x ) Matutino  ( ) Vespertino  ( ) Integral"
+                        : publi.Turno === " Vespertino"
+                          ? "( ) Matutino  ( x ) Vespertino  ( ) Integral"
+                          : publi.Turno === " Integral"
+                            ? "( ) Matutino  ( ) Vespertino  ( x ) Integral"
+                            : "( ) Matutino  ( ) Vespertino  ( ) Integral" // Caso padrão se nenhum valor for igual
+                      }
+                      <br />
                     </div>
                   </div>
+
+                  <div className="line">
+                    <div className="lineinto">Professor(a) regente da turma: {professorName}</div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto">Professor(a)</div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto">Professor(a)</div>
+                  </div>
+
+                 { isfisc === true &&
+                     <div> 
+                     <div className="line">
+                     <div className="lineinto">Professor(a) Educacao fisica: {professorName} </div>
+                   </div>
+                   <div className="line">
+                     <div className="lineinto">Professor(a) Auxiliar:  {nomeaux}</div>
+  
+                   </div>
+                   <div className="line">
+                     <div className="lineinto">Professor(a)</div>
+                   </div>
+                     </div>
+                     
+                 }
                   
-                </div>
-                
-                <div className="line" style={{display:'flex', flexDirection:'column', alignItems:'flex-start'}}>
-                  <div className="lineinto">
-                    Foi aplicada a Organização Curricular específica do Programa Superação?
+
+                  <div className="line">
+                    <div className="lineinto">Estudante: {publi.name}</div>
                   </div>
-                      
-                      {publi.aplicacao && (
-                        <div style={{display:'flex', flexDirection:'row', width:'auto'}}>
-                          {publi.superacaomodelo === true ? (
-                            <div>
-                              ( x ) sim
-                              <br />
-                              (  ) não
-                              <br />
-                              (  ) parcialmente
-                            </div>
-                          ) : publi.superacaomodelo === false ? (
-                            <div>
-                              (  ) sim
-                              <br />
-                              (  ) não
-                              <br />
-                              ( x ) parcialmente
-                            </div>
-                          ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
-                            <div>
-                              (  ) sim
-                              <br />
-                              (  ) não
-                              <br />
-                              ( x ) parcialmente
-                            </div>
-                          ) : (
-                            " " // Caso padrão se nenhum valor for igual
-                          )}
-                        </div>
-                      )}
+                  <div className="line">
+                    <div className="lineinto">
+                      Apresenta Deficiência ou TEA?: {" "}
+                      {publi.isTea === true
+                        ? "(  ) não ( x ) sim"
+                        : "( x ) não (  ) sim"}
+                      <br />
                     </div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto">
+                      Houve adequação curricular?: {" "}
+                      {publi.adequacao === true
+                        ? "(  ) não ( x ) sim"
+                        : "( x ) não (  ) sim"}
+                      <br />
+                    </div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto">
+                      Estudante indicado para temporalidade?: {" "}
+                      {publi.adequacao === true
+                        ? "(  ) não ( x ) sim"
+                        : "( x ) não (  ) sim"}
+                      <br />
+                    </div>
+                  </div>
+                  <div className="line">
+                    <div className="lineinto">
+                      Estudante do Programa SuperAção "setado" no Sistema de Gestão i-Educar?: {" "}
+                      {publi.superacao
+                        ? "(  ) não ( x ) sim"
+                        : "( x ) não (  ) sim"}
+                      <br />
+                      <div className="lineinto">
+
+                        {publi.superacao === true && (
+                          <div className="lineclean">
+                            {publi.superacaomodelo === "Classe comum com atendimento personalizado." ? (
+                              <>
+                                ( x ) Classe Comum com atendimento personalizado
+                                <br />
+                                (  ) Turma SuperAção
+                                <br />
+                                (  ) Turma SuperAção Reduzida
+                              </>
+                            ) : publi.superacaomodelo === "Turma SuperAção" ? (
+                              <>
+                                (  ) Classe Comum com atendimento personalizado
+                                <br />
+                                ( x ) Turma SuperAção
+                                <br />
+                                (  ) Turma SuperAção Reduzida
+                              </>
+                            ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
+                              <>
+                                (  ) Classe Comum com atendimento personalizado
+                                <br />
+                                (  ) Turma SuperAção
+                                <br />
+                                ( x ) Turma SuperAção Reduzida
+                              </>
+                            ) : (
+                              " " // Caso padrão se nenhum valor for igual
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="line" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div className="lineinto">
+                      Foi aplicada a Organização Curricular específica do Programa Superação?
+                    </div>
+
+                    {publi.aplicacao && (
+                      <div style={{ display: 'flex', flexDirection: 'row', width: 'auto' }}>
+                        {publi.superacaomodelo === true ? (
+                          <div>
+                            ( x ) sim
+                            <br />
+                            (  ) não
+                            <br />
+                            (  ) parcialmente
+                          </div>
+                        ) : publi.superacaomodelo === false ? (
+                          <div>
+                            (  ) sim
+                            <br />
+                            (  ) não
+                            <br />
+                            ( x ) parcialmente
+                          </div>
+                        ) : publi.superacaomodelo === "Turma SuperAção Reduzida" ? (
+                          <div>
+                            (  ) sim
+                            <br />
+                            (  ) não
+                            <br />
+                            ( x ) parcialmente
+                          </div>
+                        ) : (
+                          " " // Caso padrão se nenhum valor for igual
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="line">
                     <div className="lineintoitem">
-                      Bimestre 
+                      Bimestre: {parseInt(selectedBimestre, 10) + 1}
                     </div>
                     <div className="lineintoitem">
-                    Total de dias letivos:
+                      Total de dias letivos: {publi?.dias}
                     </div>
                     <div className="lineintoitem">
-                    Total de Faltas:{publi.faltas}
+                      Total de Faltas: {publi.faltas}
                     </div>
                   </div>
                 </div>
@@ -402,83 +474,83 @@ const RavGerador = () => {
               <div className="table-row1">
                 <div className="table-cell">B</div>
               </div>
-              <div className="contsecondcolum">
+              <div className="collunm">
                 {resumoData && resumoData.map((item, index) => (
                   <div key={index}>
-                  {item.retorno} {item.assunto} {item.avaliacao} 
+                    {item.retorno} {item.assunto} {item.avaliacao}
                   </div>
                 ))}
               </div>
             </div>
             <div className="conttable">
-            <div className="table-row1">
+              <div className="table-row1">
                 <div className="table-cell">C</div>
-            </div>
-            <div className="contsecondcolum" style={{width:'100%'}}>
-               <div className="contint"> Local/Data: {"Brasília"}    {dateTime.day}/{dateTime.month}/{dateTime.year} </div>
+              </div>
+              <div className="contsecondcolum" style={{ width: '100%' }}>
+                <div className="contint"> Local/Data: {"Brasília"}    {dateTime.day}/{dateTime.month}/{dateTime.year} </div>
               </div>
             </div>
             <div className="conttable">
-            <div className="table-row1">
+              <div className="table-row1">
                 <div className="table-cell">D</div>
+              </div>
+              <div style={{ width: '100%' }}>
+                <div className="line">
+                  <div className="line" style={{ display: 'flex', border: 'none', justifyContent: 'center', alignItems: 'flex-end', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Professor(a)
+                  </div>
+                  <div className="line" style={{ display: 'flex', borderRight: 'none', borderBottom: 'none', alignItems: 'flex-end', justifyContent: 'center', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Professor(a)
+                  </div>
+                </div>
+                <div className="line">
+                  <div className="line" style={{ display: 'flex', border: 'none', justifyContent: 'center', alignItems: 'flex-end', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Professor(a)
+                  </div>
+                  <div className="line" style={{ display: 'flex', borderRight: 'none', borderBottom: 'none', alignItems: 'flex-end', justifyContent: 'center', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Coordenador(a)
+                    Pedagógico
+                  </div>
+                </div>
+                <div className="line">
+                  <div className="line" style={{ display: 'flex', border: 'none', justifyContent: 'center', alignItems: 'flex-end', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Professor(a)
+                  </div>
+                  <div className="line" style={{ display: 'flex', borderRight: 'none', borderBottom: 'none', alignItems: 'flex-end', justifyContent: 'center', height: '50px' }}>
+                    Assinatura/Matrícula do(a) Professor(a)
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={{width:'100%'}}>
-                <div className="line">
-                <div className="line" style={{display:'flex',border:'none', justifyContent:'center',alignItems:'flex-end', height:'50px'}}>
-                 Assinatura/Matrícula do(a) Professor(a)
-                </div>
-                <div className="line" style={{display:'flex',borderRight:'none',borderBottom:'none',alignItems:'flex-end', justifyContent:'center', height:'50px'}}>
-                Assinatura/Matrícula do(a) Professor(a)
-                </div>
-                </div>
-                <div className="line">
-                <div className="line" style={{display:'flex',border:'none', justifyContent:'center',alignItems:'flex-end', height:'50px'}}>
-                Assinatura/Matrícula do(a) Professor(a)
-                </div>
-                <div className="line" style={{display:'flex',borderRight:'none',borderBottom:'none',alignItems:'flex-end', justifyContent:'center', height:'50px'}}>
-                Assinatura/Matrícula do(a) Coordenador(a)
-Pedagógico
-                </div>
-                </div>
-                <div className="line">
-                <div className="line" style={{display:'flex',border:'none', justifyContent:'center',alignItems:'flex-end', height:'50px'}}>
-                Assinatura/Matrícula do(a) Professor(a)
-                </div>
-                <div className="line" style={{display:'flex',borderRight:'none',borderBottom:'none',alignItems:'flex-end', justifyContent:'center', height:'50px'}}>
-                Assinatura/Matrícula do(a) Professor(a)
-                </div>
-                </div>
-                </div>
-             </div>
-             <div className="conttable">
+            <div className="conttable">
               <div className="table-row1">
                 <div className="table-cell">E</div>
               </div>
-              <div className="contsecondcolum" style={{width:"100%"}}>
-                  <div style={{display:'flex', alignItems:'center', justifyContent:'center',width:"100%", margin:'20px'}}>Resultado Final (Preencher somente ao final do 4º bimestre)</div>
-                  <div style={{width:"100%"}}>
-                    ( x ) Cursando ( ) Progressão Continuada ( ) Avanço das Aprendizagens-Correção de
+              <div className="contsecondcolum" style={{ width: "100%" }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: "100%", margin: '20px' }}>Resultado Final (Preencher somente ao final do 4º bimestre)</div>
+                <div style={{ width: "100%" }}>
+                  ( x ) Cursando ( ) Progressão Continuada ( ) Avanço das Aprendizagens-Correção de
                   Fluxo  ( ) Aprovado ( ) Reprovado ( )Abandono   </div>
-                  <div style={{width:"100%"}}>
-                  
+                <div style={{ width: "100%" }}>
 
-                  </div>
+
+                </div>
               </div>
             </div>
             <div className="conttable">
               <div className="table-row1">
                 <div className="table-cell">F</div>
               </div>
-              <div className="contsecondcolum" style={{width:"100%", padding:'10px'}}>
-              Orientações: Professor(a), ao elaborar o Registro de Avaliação do 2º Ciclo (RAv) é importante considerar a descrição do
-processo de aprendizagem do estudante, conforme as DIRETRIZES DE AVALIAÇÃO (2014, p. 49) que assim dispõe: “é
-precisoque o mesmo contenha elementos da avaliação diagnóstica observados pelo docente e/ou pelo Conselho de Classe:
-asaprendizagens evidenciadas e as dificuldades percebidas devem ser descritas na primeira parte do documento. Em seguida,
-deve-
-                  <div style={{width:"100%"}}>
-                  
+              <div className="contsecondcolum" style={{ width: "100%", padding: '10px' }}>
+                Orientações: Professor(a), ao elaborar o Registro de Avaliação do 2º Ciclo (RAv) é importante considerar a descrição do
+                processo de aprendizagem do estudante, conforme as DIRETRIZES DE AVALIAÇÃO (2014, p. 49) que assim dispõe: “é
+                precisoque o mesmo contenha elementos da avaliação diagnóstica observados pelo docente e/ou pelo Conselho de Classe:
+                asaprendizagens evidenciadas e as dificuldades percebidas devem ser descritas na primeira parte do documento. Em seguida,
+                deve-
+                <div style={{ width: "100%" }}>
 
-                  </div>
+
+                </div>
               </div>
             </div>
 

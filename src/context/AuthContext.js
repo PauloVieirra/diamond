@@ -11,6 +11,7 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
+
 // Provedor de contexto de autenticação
 export const AuthProvider = ({ children }) => {
   const [isLoading, setLoading] = useState(false);
@@ -19,9 +20,11 @@ export const AuthProvider = ({ children }) => {
   const [complit, setComplit] = useState(null);
   const [professor, setProfessor] = useState(null);
   const [userType, setUserType] = useState('Tipo de usuário não disponível');
-  const [nome, setNome] = useState(null);
+  const [isfisc, setIsFisic] = useState(false);
+  const [auxiliar, setAuxiliar] = useState(false);
+  const [nomeaux, setNomeAux] = useState('Informe o nome do auxiliar');
 
-  console.log(complit+'complit');
+  
 
   const navigate = useNavigate();
 
@@ -239,7 +242,7 @@ const signUp = async (email, password) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, isLoading, login, logout, signUp, getUserData, getListaEscolas, handleLoading, fetchUser, complit, saveProfessorData, professor, userType }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, isLoading,  isfisc, setIsFisic, auxiliar, setAuxiliar, nomeaux, setNomeAux, login, logout, signUp, getUserData, getListaEscolas, handleLoading, fetchUser, complit, saveProfessorData, professor, userType }}>
       {children}
     </AuthContext.Provider>
   );
