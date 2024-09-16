@@ -28,8 +28,13 @@ const Escola = () => {
   };
 
   const handleSave = async () => {
+
     if (!nomeEscola.trim()) {
       alert("Por favor, preencha o nome da escola.");
+      return; // Interrompe a execução se o campo estiver vazio
+    }
+    if (!codigoEscola.trim()) {
+      alert("Por favor, preencha o código da escola.");
       return; // Interrompe a execução se o campo estiver vazio
     }
   
@@ -214,7 +219,9 @@ const Escola = () => {
         height: '42px',
         backgroundColor: editingId ? '#ce9f39' : '#335c81;', // Cor condicional
         color: 'white', // Cor do texto
-        }} >
+        }} 
+       
+        >
         {editingId ? 'Atualizar' : 'Cadastrar'}</button>
         </div>
       

@@ -46,20 +46,22 @@ const Disciplina = () => {
       setSnackbarOpen(true);
       return;
     }
-
+  
+    // Verificar se a disciplina já existe
     if (await checkIfExists('disciplinas', 'nome', nomeDisciplina)) {
       setSnackbarMessage('Disciplina já cadastrada.');
       setSnackbarSeverity('warning');
       setSnackbarOpen(true);
       return;
     }
-
+  
     if (editingId) {
+      // Atualizar disciplina existente
       const { error } = await supabase
         .from('disciplinas')
         .update({ nome: nomeDisciplina })
         .eq('id', editingId);
-
+  
       if (error) {
         setSnackbarMessage(`Erro ao atualizar disciplina: ${error.message}`);
         setSnackbarSeverity('error');
@@ -69,31 +71,25 @@ const Disciplina = () => {
         setEditingId(null);
       }
     } else {
+      // Inserir nova disciplina
       const { error: insertError } = await supabase.from('disciplinas').insert([{ nome: nomeDisciplina }]);
       if (insertError) {
         setSnackbarMessage(`Erro ao salvar disciplina: ${insertError.message}`);
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
         return;
-      }
-
-      const { error: alterError } = await supabase.rpc('add_column_to_bimestre_1', {
-        column_name: nomeDisciplina
-      });
-
-      if (alterError) {
-        setSnackbarMessage(`Erro ao adicionar disciplina: ${alterError.message}`);
-        setSnackbarSeverity('error');
       } else {
         setSnackbarMessage('Disciplina cadastrada com sucesso!');
         setSnackbarSeverity('success');
       }
     }
-
+  
+    // Limpar o campo e recarregar as disciplinas
     setNomeDisciplina('');
     fetchDisciplinas();
     setSnackbarOpen(true);
   };
+  
 
   const handleEdit = (id) => {
     const disciplina = disciplinas.find((d) => d.id === id);
@@ -157,7 +153,7 @@ const Disciplina = () => {
   
       // Se a disciplina estiver associada a qualquer uma das tabelas, impedir a exclusão
       if (resumo.length > 0 || retornoModerado.length > 0 || retornoNegativo.length > 0 || retornoPositivo.length > 0) {
-        setSnackbarMessage('Não é possível excluir a disciplina. Ela está associada a registros existentes.');
+        setSnackbarMessage('Existe assuntos associados.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
         return;
@@ -166,7 +162,7 @@ const Disciplina = () => {
       // Passo 5: Excluir a disciplina se não houver associações
       const { error: deleteError } = await supabase.from('disciplinas').delete().eq('id', id);
       if (deleteError) {
-        setSnackbarMessage(`Erro ao excluir disciplina: ${deleteError.message}`);
+        setSnackbarMessage(`Disciplina nao pode ser deletada pois esta associada a socumentos`);
         setSnackbarSeverity('error');
       } else {
         setSnackbarMessage('Disciplina excluída com sucesso!');
@@ -213,15 +209,7 @@ const Disciplina = () => {
 
           <div> {snackbarMessage}</div>
 
-           <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+           
         </div>
         <div className='btninp'>
           <button

@@ -28,6 +28,8 @@ const RavGerador = () => {
   const handleCloseModal = () => setIsModalOpen(false);
   const handleBimestreChange = (e) => setSelectedBimestre(e.target.value);
 
+  
+
   const fetchBimestreData = async () => {
     try {
       const { data, error } = await supabase

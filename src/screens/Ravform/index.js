@@ -42,11 +42,14 @@ export default function Ravgerador() {
   const [selectedAssunto, setSelectedAssunto] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedRendimento, setSelectedRendimento] = useState(null);
+  const [rendimentos, setRendimentos] = useState(null);
+  const [desempenho, setDesempenho] = useState("");
+  const [retornoRendimento, setRetornoRendimento] = useState(null);
   const [selectedDiscipline, setSelectedDiscipline] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [professorName, setProfessorName] = useState("");
   const [professorCourse, setProfessorCourse] = useState('');
-  console.log(professorName);
+  console.log(assuntos);
 
   const [bloco, setBloco] = useState(null);
   const { user, isfisc, setIsFisic, auxiliar, setAuxiliar, nomeaux, setNomeAux } = useAuth();
@@ -233,6 +236,128 @@ export default function Ravgerador() {
     fetchFilteredItems();
   }, [selectedDisciplina, selectedAssunto, selectedRendimento]);
 
+  
+
+ useEffect(() => {
+  const fetchRendimentos = async () => {
+    const nametabelaResumo = `resumo_${activeTab}`;
+
+    // Verificar se existe uma disciplina com assuntos associados
+    const disciplinaId = Object.keys(assuntos).find(
+      key => assuntos[key] && assuntos[key].length > 0
+    );
+
+    if (!disciplinaId) {
+      console.error("Nenhuma disciplina válida encontrada");
+      return;
+    }
+
+    // Pegar o primeiro assunto dessa disciplina
+    const assunto = assuntos[disciplinaId][0]; // O primeiro assunto associado à disciplina
+
+    if (!assunto) {
+      console.error("Nenhum assunto válido encontrado para a disciplina", disciplinaId);
+      return;
+    }
+
+    // Buscar rendimentos
+    const { data, error } = await supabase
+      .from(nametabelaResumo)
+      .select('rendimento')
+      .eq('aluno_id', id)
+      .eq('disciplina_id', disciplinaId) // Filtrar corretamente pela chave disciplinaId
+      .eq('assunto_id', assunto.id); // Usar apenas o ID do assunto
+
+    if (error) {
+      console.error("Erro ao buscar rendimentos:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setRendimentos(false); // Nenhum dado encontrado
+    } else if (data.length === 1) {
+      setRendimentos(data[0].rendimento); // Um único dado encontrado
+      setRetornoRendimento(null)
+    } else {
+      console.error("Mais de uma linha encontrada para aluno_id, disciplina_id e assunto_id");
+    }
+  };
+
+  fetchRendimentos();
+}, [id, assuntos, activeTab]);
+
+const handleCheckboxC = async (event) => {
+  const newValue = event.target.checked;
+  setRendimentos(newValue);
+
+  const nametabelaResumo = `resumo_${activeTab}`;
+
+  // Verificar se existe uma disciplina com assuntos associados
+  const disciplinaId = Object.keys(assuntos).find(
+    key => assuntos[key] && assuntos[key].length > 0
+  );
+
+  if (!disciplinaId) {
+    console.error("Nenhuma disciplina válida encontrada");
+    return;
+  }
+
+  // Pegar o primeiro assunto dessa disciplina
+  const assunto = assuntos[disciplinaId][0]; // O primeiro assunto associado à disciplina
+
+  if (!assunto) {
+    console.error("Nenhum assunto válido encontrado para a disciplina", disciplinaId);
+    return;
+  }
+
+  // Verificar se a linha já existe
+  const { data, error: fetchError } = await supabase
+    .from(nametabelaResumo)
+    .select('id')
+    .eq('aluno_id', id)
+    .eq('disciplina_id', disciplinaId) // Certificar-se de usar o id da disciplina
+    .eq('assunto_id', assunto.id); // Usar apenas o ID do assunto
+
+  if (fetchError) {
+    console.error("Erro ao verificar a existência do registro:", fetchError);
+    return;
+  }
+
+  let saveError;
+  if (data && data.length > 0) {
+    // Atualizar se o registro existir
+    const { error } = await supabase
+      .from(nametabelaResumo)
+      .update({ rendimento: newValue })
+      .eq('aluno_id', id)
+      .eq('disciplina_id', disciplinaId) // Usar o id da disciplina
+      .eq('assunto_id', assunto.id); // Usar apenas o ID do assunto
+
+    saveError = error;
+  } else {
+    // Inserir se o registro não existir
+    const { error } = await supabase
+      .from(nametabelaResumo)
+      .insert({
+        aluno_id: id,
+        disciplina_id: parseInt(disciplinaId), // Aqui garantimos que `disciplina_id` seja apenas o ID da disciplina
+        assunto_id: assunto.id, // Gravando apenas o ID do assunto
+        rendimento: newValue
+      });
+
+    saveError = error;
+  }
+
+  if (saveError) {
+    console.error("Erro ao salvar rendimentos:", saveError);
+  } else {
+    console.log("Rendimentos atualizado com sucesso!");
+    setRendimentos(null)
+  }
+};
+
+  
+  
 
 
   const handleCheckboxChange = async (assunto, value) => {
@@ -300,6 +425,8 @@ export default function Ravgerador() {
         return "Mediano";
       case "3":
         return "Bom";
+        case "4":
+        return "Não se aplica";
       default:
         return "";
     }
@@ -313,6 +440,8 @@ export default function Ravgerador() {
         return "2";
       case "Bom":
         return "3";
+        case "Não se aplica":
+          return "4";
       default:
         return "";
     }
@@ -440,6 +569,11 @@ export default function Ravgerador() {
 
 
   const handleUpdate = async () => {
+
+
+    const nametabelaBimestre = `bimestre_${activeTab + 1}`;
+    const nametabelaResumo = `resumo_${activeTab}`;
+
     // Preparar dados para a tabela alunos
     const alunoData = {
       istea,
@@ -492,7 +626,7 @@ export default function Ravgerador() {
 
     // Salvar dados na tabela bimestre_1
     const { error: bimestreError } = await supabase
-      .from("bimestre_1")
+      .from(nametabelaBimestre)
       .upsert(bimestreData);
 
     if (bimestreError) {
@@ -833,8 +967,8 @@ export default function Ravgerador() {
                             <TabPanel key={assuntoIndex}>
                               <div className="form-group">
                                 <label>Avaliação </label>
-                                <div className="checkbox-group">
-                                  {[1, 2, 3].map(level => (
+                                <div className="checkbox-group" style={{backgroundColor:"#dedfdf"}}>
+                                  {[1, 2, 3, 4,].map(level => (
                                     <label key={level}>
                                       <input
                                         type="radio"
@@ -842,10 +976,14 @@ export default function Ravgerador() {
                                         value={level}
                                         checked={getCheckboxValue(bimestres[assunto.nome]) === level.toString()}
                                         onChange={(e) => handleCheckboxChange(assunto.nome, e.target.value)}
+                                        style={{width:'22px'}}
                                       />
                                       {getCheckboxLabel(level.toString())}
                                     </label>
+                                    
                                   ))}
+
+
                                 </div>
                               </div>
 

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import supabase from '../../servers/SupabaseConect';
 import { StyleContext } from '../../context/StyleContext';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
 import './styles.css';
 
 const Assuntos = () => {
@@ -16,7 +14,7 @@ const Assuntos = () => {
   const [cursoSelecionado, setCursoSelecionado] = useState('');
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
   const [searchQuery, setSearchQuery] = useState('');
-
+  console.log(bimestreSelecionado);
 
   useEffect(() => {
     fetchAssuntos();
@@ -46,8 +44,6 @@ const Assuntos = () => {
     setAssuntos(filteredAssuntos);
   };
   
-  
-
   const fetchDisciplinas = async () => {
     const { data, error } = await supabase.from('disciplinas').select('id, nome');
     if (error) {
@@ -58,78 +54,97 @@ const Assuntos = () => {
   };
 
   const handleSave = async () => {
+    // Verificar se o nome do assunto já está cadastrado
     if (await checkIfExists('assuntos', 'nome', nomeAssunto)) {
-      showSnack('Assunto já cadastrado.', 'warning');
-      return;
+        showSnack('Assunto já cadastrado.', 'warning');
+        return;
     }
-  
+
     // Verificar se cada campo está preenchido e fornecer mensagens específicas
-  if (!nomeAssunto) {
-    showSnack('Por favor, preencha o nome do assunto.', 'warning');
-    return;
-  }
-
-  if (!disciplinaSelecionada) {
-    showSnack('Por favor, selecione uma disciplina.', 'warning');
-    return;
-  }
-
-  if (!bimestreSelecionado) {
-    showSnack('Por favor, selecione um bimestre.', 'warning');
-    return;
-  }
-
-  if (!cursoSelecionado) {
-    showSnack('Por favor, selecione um curso.', 'warning');
-    return;
-  }
-  
-    if (editingId) {
-      const { error } = await supabase
-        .from('assuntos')
-        .update({
-          nome: nomeAssunto,
-          disciplina_id: disciplinaSelecionada,
-          bimestre: bimestreSelecionado,
-          curso: cursoSelecionado,  // Adicionando curso
-        })
-        .eq('id', editingId);
-  
-      if (error) {
-        showSnack(`Erro ao atualizar assunto: ${error.message}`, 'error');
-      } else {
-        showSnack('Assunto atualizado com sucesso!', 'success');
-        setEditingId(null);
-      }
-    } else {
-      const { error } = await supabase.from('assuntos').insert([
-        {
-          nome: nomeAssunto,
-          disciplina_id: disciplinaSelecionada,
-          bimestre: bimestreSelecionado,
-          curso: cursoSelecionado,  // Adicionando curso
-        },
-      ]);
-      if (error) {
-        showSnack(`Erro ao salvar assunto: ${error.message}`, 'error');
-      } else {
-        showSnack('Assunto cadastrado com sucesso!', 'success');
-      }
+    if (!nomeAssunto) {
+        showSnack('Por favor, preencha o nome do assunto.', 'warning');
+        return;
     }
-  
+
+    if (!disciplinaSelecionada) {
+        showSnack('Por favor, selecione uma disciplina.', 'warning');
+        return;
+    }
+
+    if (!bimestreSelecionado) {
+        showSnack('Por favor, selecione um bimestre.', 'warning');
+        return;
+    }
+
+    if (!cursoSelecionado) {
+        showSnack('Favor selecionar uma série.', 'warning');
+        return;
+    }
+
+    if (editingId) {
+        // Atualizar o assunto existente
+        const { error } = await supabase
+            .from('assuntos')
+            .update({
+                nome: nomeAssunto,
+                disciplina_id: disciplinaSelecionada,
+                bimestre: bimestreSelecionado,
+                curso: cursoSelecionado,
+            })
+            .eq('id', editingId);
+
+        if (error) {
+            showSnack(`Erro ao atualizar assunto: ${error.message}`, 'error');
+        } else {
+            showSnack('Assunto atualizado com sucesso!', 'success');
+            setEditingId(null);
+        }
+    } else {
+        // Inserir um novo assunto
+        const { error } = await supabase.from('assuntos').insert([
+            {
+                nome: nomeAssunto,
+                disciplina_id: disciplinaSelecionada,
+                bimestre: bimestreSelecionado,
+                curso: cursoSelecionado,
+            },
+        ]);
+
+        if (error) {
+            showSnack(`Erro ao salvar assunto: ${error.message}`, 'error');
+            return;
+        }
+
+        // Adicionar uma nova coluna na tabela relatorio_1
+        const { error: columnError } = await supabase.rpc('add_column_if_not_exists', {
+            p_table_name: `relatorio_${bimestreSelecionado}`, // Nome da tabela
+            p_column_name: nomeAssunto, // Nome da coluna com a formatação exata
+            p_column_type: 'TEXT' // Tipo de dado da nova coluna
+        });
+
+        if (columnError) {
+            showSnack(`Erro ao adicionar coluna: ${columnError.message}`, 'error');
+            return;
+        }
+
+        showSnack('Assunto cadastrado com sucesso e coluna adicionada!', 'success');
+    }
+
     // Limpar os campos após o cadastro
     setNomeAssunto('');
     setDisciplinaSelecionada('');
     setBimestreSelecionado('');
     setCursoSelecionado('');
     fetchAssuntos();
-  };
-  
+};
 
+
+  
+  
   const handleEdit = async (id) => {
     // Verificar se o id do assunto está presente na coluna assunto_id da tabela resumo_1
     const { data, error: checkError } = await supabase
-      .from('resumo_1')
+      .from(`resumo_${bimestreSelecionado}`)
       .select('assunto_id')
       .eq('assunto_id', id);
   
@@ -329,15 +344,7 @@ const Assuntos = () => {
 </table>
 
       </div>
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={5000}
-        onClose={handleSnackClose}
-      >
-        <MuiAlert onClose={handleSnackClose} severity={snack.severity} sx={{ width: '100%' }}>
-          {snack.message}
-        </MuiAlert>
-      </Snackbar>
+     
     </div>
     </main>
   );
